@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinTerMul", "WinTerMul\WinTerMul.csproj", "{5A4A8100-05D4-45E4-94C4-368CA64301A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8126737D-97CD-4E69-B2AD-FABFCA4B63A1}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A4A8100-05D4-45E4-94C4-368CA64301A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A4A8100-05D4-45E4-94C4-368CA64301A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A4A8100-05D4-45E4-94C4-368CA64301A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A4A8100-05D4-45E4-94C4-368CA64301A8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8B2E7803-F593-4089-BAFF-AD50EB19254A}
+	EndGlobalSection
+EndGlobal
