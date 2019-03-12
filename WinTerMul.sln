@@ -11,7 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinTerMul.Terminal", "WinTerMul.Terminal\WinTerMul.Terminal.csproj", "{A3ECA541-3C80-4133-A7AA-318EA7911DE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Terminal", "WinTerMul.Terminal\WinTerMul.Terminal.csproj", "{A3ECA541-3C80-4133-A7AA-318EA7911DE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinTerMul.Common", "WinTerMul.Common\WinTerMul.Common.csproj", "{56877510-3A9F-4D87-B697-54DB3E0301C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A3ECA541-3C80-4133-A7AA-318EA7911DE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3ECA541-3C80-4133-A7AA-318EA7911DE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3ECA541-3C80-4133-A7AA-318EA7911DE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56877510-3A9F-4D87-B697-54DB3E0301C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56877510-3A9F-4D87-B697-54DB3E0301C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56877510-3A9F-4D87-B697-54DB3E0301C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56877510-3A9F-4D87-B697-54DB3E0301C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

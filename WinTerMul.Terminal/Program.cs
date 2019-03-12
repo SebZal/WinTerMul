@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO.MemoryMappedFiles;
 using System.Security.Cryptography;
 using System.Threading;
+
+using WinTerMul.Common;
 
 namespace WinTerMul.Terminal
 {
@@ -10,6 +11,8 @@ namespace WinTerMul.Terminal
     {
         static void Main(string[] args)
         {
+            var mapName = args[0];
+
             var sha1 = new SHA1CryptoServiceProvider();
             var previousHash = new byte[20];
 
@@ -28,7 +31,7 @@ namespace WinTerMul.Terminal
 
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
-            using (var mmf = MemoryMappedFile.CreateOrOpen("WinTerMul", 65536)) // TODO create helper class for this
+            using (var mmf = MemoryMappedFileUtility.OpenMemoryMappedFile(mapName))
             {
                 while (true) // TODO use event based system instead of polling
                 {

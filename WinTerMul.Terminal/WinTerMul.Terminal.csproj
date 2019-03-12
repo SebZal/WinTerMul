@@ -9,4 +9,8 @@
     <PackageReference Include="PInvoke.Kernel32" Version="0.5.184" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WinTerMul.Common\WinTerMul.Common.csproj" />
+  </ItemGroup>
+
 </Project>
