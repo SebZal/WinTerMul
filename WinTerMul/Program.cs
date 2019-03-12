@@ -1,5 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+
+using WinTerMul.Terminal;
 
 namespace WinTerMul
 {
@@ -7,39 +10,42 @@ namespace WinTerMul
     {
         private static void Main(string[] args)
         {
-            var process = new Process
+            var terminal = new Process
             {
-                StartInfo = new ProcessStartInfo("cmd.exe")
+                // TODO change path
+                StartInfo = new ProcessStartInfo(@"C:\Users\zalewski\source\repos\WinTerMul\WinTerMul.Terminal\bin\Debug\net461\WinTerMul.Terminal.exe")
                 {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    RedirectStandardInput = true,
                 }
             };
+            terminal.Start();
 
-            process.OutputDataReceived += Process_OutputDataReceived;
-            process.ErrorDataReceived += Process_ErrorDataReceived;
+            var server = new TcpListener(IPAddress.Any, 43213);
+            server.Start();
 
-            process.Start();
+            var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            while (true)
+            using (var client = server.AcceptTcpClient())
             {
-                var line = Console.ReadLine();
-                process.StandardInput.WriteLine(line);
+                using (var networkStream = client.GetStream())
+                {
+                    while (true)
+                    {
+                        if (!networkStream.CanRead || !networkStream.DataAvailable)
+                        {
+                            continue;
+                        }
+
+                        var terminalData = Serializer.Deserialize(networkStream);
+
+                        NativeMethods.WriteConsoleOutput(
+                            handle,
+                            terminalData.lpBuffer,
+                            terminalData.dwBufferSize,
+                            terminalData.dwBufferCoord,
+                            ref terminalData.lpWriteRegion);
+                    }
+                }
             }
-        }
-
-        private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            Console.WriteLine(e.Data);
-        }
-
-        private static void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            Console.WriteLine(e.Data);
         }
     }
 }
