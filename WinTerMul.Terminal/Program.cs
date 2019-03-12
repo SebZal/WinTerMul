@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net.Sockets;
+using System.IO.MemoryMappedFiles;
 using System.Security.Cryptography;
 using System.Threading;
 
@@ -28,10 +28,12 @@ namespace WinTerMul.Terminal
 
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
-            using (var client = new TcpClient("localhost", 43213))
+            using (var mmf = MemoryMappedFile.CreateOrOpen("WinTerMul", 65536)) // TODO create helper class for this
             {
-                while (true)
+                while (true) // TODO use event based system instead of polling
                 {
+                    Thread.Sleep(10);
+
                     if (!PInvoke.Kernel32.GetConsoleScreenBufferInfo(handle, out var bufferInfo))
                     {
                         // TODO error handling
@@ -61,11 +63,6 @@ namespace WinTerMul.Terminal
                         throw new Exception();
                     }
 
-                    var networkStream = client.GetStream();
-
-                    var stopwatch = new Stopwatch();
-                    stopwatch.Start();
-
                     var data = Serializer.Serialize(terminalData);
                     var hash = sha1.ComputeHash(data);
 
@@ -82,7 +79,10 @@ namespace WinTerMul.Terminal
                     if (isHashDifferent)
                     {
                         previousHash = hash;
-                        networkStream.Write(data, 0, data.Length);
+                        using (var stream = mmf.CreateViewStream())
+                        {
+                            stream.Write(data, 0, data.Length);
+                        }
                     }
                 }
             }
