@@ -25,6 +25,7 @@ namespace WinTerMul.Terminal
             {
                 StartInfo = new ProcessStartInfo("cmd.exe")
                 {
+                    //WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
             process.Start();
@@ -36,6 +37,22 @@ namespace WinTerMul.Terminal
 
             var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
+
+            // TODO handle this in a better way
+            PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var inf);
+            var rect = new PInvoke.SMALL_RECT
+            {
+                Top = (short)(inf.srWindow.Top + 0),
+                Bottom = (short)(inf.srWindow.Bottom + 16),
+                Left = inf.srWindow.Left,
+                Right = (short)(inf.srWindow.Right - 13)
+            };
+            var r = NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect);
+            if (!r)
+            {
+                Console.WriteLine(PInvoke.Kernel32.GetLastError());
+                Console.WriteLine("ERROR");
+            }
 
             var messageCount = 0;
 

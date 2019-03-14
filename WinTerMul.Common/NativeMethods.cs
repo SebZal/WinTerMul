@@ -34,5 +34,11 @@ namespace WinTerMul.Common
 
         [DllImport("kernel32.dll")]
         public static extern bool SetConsoleScreenBufferSize(IntPtr hConsoleOutput, COORD dwSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleWindowInfo(
+            IntPtr hConsoleOutput,
+            bool bAbsolute,
+            ref SMALL_RECT lpConsoleWindow);
     }
 }
