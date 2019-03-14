@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul", "WinTerMul\WinTerMul.csproj", "{5A4A8100-05D4-45E4-94C4-368CA64301A8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3ECA541-3C80-4133-A7AA-318EA7911DE0} = {A3ECA541-3C80-4133-A7AA-318EA7911DE0}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8126737D-97CD-4E69-B2AD-FABFCA4B63A1}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Terminal", "WinTerMul.Terminal\WinTerMul.Terminal.csproj", "{A3ECA541-3C80-4133-A7AA-318EA7911DE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinTerMul.Common", "WinTerMul.Common\WinTerMul.Common.csproj", "{56877510-3A9F-4D87-B697-54DB3E0301C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Common", "WinTerMul.Common\WinTerMul.Common.csproj", "{56877510-3A9F-4D87-B697-54DB3E0301C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
