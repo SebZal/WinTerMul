@@ -19,6 +19,12 @@ namespace WinTerMul
 
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
+            NativeMethods.SetConsoleScreenBufferSize(handle, new PInvoke.COORD
+            {
+                X = 1000, // TODO adjust these values dynamically
+                Y = 500
+            });
+
             var renderer = new Thread(() =>
             {
                 while (true) // TODO use event based system instead of polling
@@ -75,7 +81,7 @@ namespace WinTerMul
                         wasTabLastKey = true;
                         activeTerminalIndex = ++activeTerminalIndex % terminals.Length;
                         activeTerminal = terminals[activeTerminalIndex];
-                        Console.Beep();
+                        Console.Beep(); // TODO remove this
                         continue;
                     }
                     else

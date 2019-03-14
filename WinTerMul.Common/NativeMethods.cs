@@ -31,5 +31,8 @@ namespace WinTerMul.Common
             INPUT_RECORD[] lpBuffer,
             int nLength,
             out int lpNumberOfEventsWritten);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool SetConsoleScreenBufferSize(IntPtr hConsoleOutput, COORD dwSize);
     }
 }
