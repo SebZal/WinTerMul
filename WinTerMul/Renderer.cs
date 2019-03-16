@@ -26,6 +26,7 @@ namespace WinTerMul
 
             var renderer = new Thread(() =>
             {
+                Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();
                 while (true) // TODO use event based system instead of polling
                 {
                     Thread.Sleep(10);
@@ -33,23 +34,29 @@ namespace WinTerMul
                     short offset = 0;
                     foreach (var terminal in _terminals)
                     {
+                        short width = 100;
+
                         var terminalData = (TerminalData)terminal.Out.Read();
-                        if (terminalData == null)
+                        if (terminalData != null)
                         {
-                            continue;
+                            terminalData.lpWriteRegion.Left += offset;
+                            terminalData.lpWriteRegion.Right += offset;
+                            NativeMethods.WriteConsoleOutput(
+                                handle,
+                                terminalData.lpBuffer,
+                                terminalData.dwBufferSize,
+                                terminalData.dwBufferCoord,
+                                ref terminalData.lpWriteRegion);
+
+                            width = terminalData.dwBufferSize.X;
+                            previousWidths[terminal] = width;
+                        }
+                        else
+                        {
+                            previousWidths.TryGetValue(terminal, out width);
                         }
 
-                        terminalData.lpWriteRegion.Left += offset;
-                        terminalData.lpWriteRegion.Right += offset;
-
-                        NativeMethods.WriteConsoleOutput(
-                            handle,
-                            terminalData.lpBuffer,
-                            terminalData.dwBufferSize,
-                            terminalData.dwBufferCoord,
-                            ref terminalData.lpWriteRegion);
-
-                        offset += terminalData.dwBufferSize.X;
+                        offset += width;
                     }
                 }
             })

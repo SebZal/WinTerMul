@@ -27,19 +27,18 @@ namespace WinTerMul
                 PInvoke.Kernel32.ReadConsoleInput(inputHandle, out var lpBuffer, 1, out var n);
                 if (lpBuffer.EventType == PInvoke.Kernel32.InputEventTypeFlag.KEY_EVENT)
                 {
-                    //// TODO don't use tab for switching terminal
-                    //if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 9 && !wasTabLastKey)
-                    //{
-                    //    wasTabLastKey = true;
-                    //    activeTerminalIndex = ++activeTerminalIndex % terminals.Length;
-                    //    activeTerminal = terminals[activeTerminalIndex];
-                    //    Console.Beep(); // TODO remove this
-                    //    continue;
-                    //}
-                    //else
-                    //{
-                    //    wasTabLastKey = false;
-                    //}
+                    if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 9 && !wasTabLastKey)
+                    {
+                        wasTabLastKey = true;
+                        activeTerminalIndex = ++activeTerminalIndex % terminals.Length;
+                        activeTerminal = terminals[activeTerminalIndex];
+                        Console.Beep(); // TODO remove this
+                        continue;
+                    }
+                    else
+                    {
+                        wasTabLastKey = false;
+                    }
 
                     //// TODO temporary close function
                     //if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 0x1B) // ESC
