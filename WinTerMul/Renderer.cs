@@ -18,23 +18,23 @@ namespace WinTerMul
         {
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
-            NativeMethods.SetConsoleScreenBufferSize(handle, new PInvoke.COORD
-            {
-                X = 1000, // TODO adjust these values dynamically
-                Y = 500
-            });
-
             var renderer = new Thread(() =>
             {
                 Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();
                 while (true) // TODO use event based system instead of polling
                 {
+                    NativeMethods.SetConsoleScreenBufferSize(handle, new PInvoke.COORD
+                    {
+                        X = 1000, // TODO adjust these values dynamically
+                        Y = 500
+                    });
+
                     Thread.Sleep(10);
 
                     short offset = 0;
                     foreach (var terminal in _terminals)
                     {
-                        short width = 100;
+                        short width = 500;
 
                         var terminalData = (TerminalData)terminal.Out.Read();
                         if (terminalData != null)
