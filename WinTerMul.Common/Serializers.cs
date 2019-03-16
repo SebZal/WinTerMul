@@ -9,7 +9,8 @@ namespace WinTerMul.Common
             new List<ISerializer>(new ISerializer[]
             {
                 new OutputSerializer(),
-                new InputSerializer()
+                new InputSerializer(),
+                new CloseCommandSerializer()
             }));
     }
 }

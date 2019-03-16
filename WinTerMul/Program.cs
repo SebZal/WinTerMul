@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 
-using Newtonsoft.Json;
 using WinTerMul.Common;
 
 namespace WinTerMul
@@ -40,20 +38,15 @@ namespace WinTerMul
                         wasTabLastKey = false;
                     }
 
-                    //// TODO temporary close function
-                    //if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 0x1B) // ESC
-                    //{
-                    //    var killBuffer = new byte[8];
-                    //    Array.Copy(BitConverter.GetBytes(-1), killBuffer, 4);
-                    //    for (var i = 0; i < terminals.Length; i++)
-                    //    {
-                    //        using (var stream = terminals[i].In.CreateViewStream())
-                    //        {
-                    //            stream.Write(killBuffer, 0, killBuffer.Length);
-                    //        }
-                    //    }
-                    //    break;
-                    //}
+                    // TODO temporary close function
+                    if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 0x1B) // ESC
+                    {
+                        foreach (var terminal in terminals)
+                        {
+                            terminal.In.Write(new CloseCommand());
+                        }
+                        break;
+                    }
 
                     activeTerminal.In.Write(new SerializableInputRecord { InputRecord = lpBuffer });
                 }

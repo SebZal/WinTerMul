@@ -107,47 +107,20 @@ namespace WinTerMul.Terminal
             kill = false;
 
             var data = inputPipe.Read();
-            if (data?.SerializerType == SerializerType.Input)
+            if (data == null)
             {
-                NativeMethods.WriteConsoleInput(
-                    handle,
-                    new[] { ((SerializableInputRecord)data).InputRecord },
-                    1,
-                    out _);
+                return;
             }
-
-            //using (var viewStream = inputMmf.CreateViewStream())
-            //{
-            //    if (!viewStream.CanRead)
-            //    {
-            //        return;
-            //    }
-
-            //    var buffer = new byte[8];
-            //    viewStream.Read(buffer, 0, buffer.Length);
-
-            //    var count = BitConverter.ToInt32(buffer, 0);
-
-            //    if (count == -1)
-            //    {
-            //        kill = true;
-            //        return;
-            //    }
-
-            //    if (count != messageCount)
-            //    {
-            //        messageCount = count;
-
-            //        var length = BitConverter.ToInt32(buffer, 4);
-            //        buffer = new byte[length];
-            //        viewStream.Read(buffer, 0, buffer.Length);
-
-            //        var @string = Encoding.UTF8.GetString(buffer);
-            //        var record = JsonConvert.DeserializeObject<PInvoke.Kernel32.INPUT_RECORD>(@string);
-
-            //        NativeMethods.WriteConsoleInput(handle, new[] { record }, 1, out var n);
-            //    }
-            //}
+            else if (data.SerializerType == SerializerType.Input)
+            {
+                var lpBuffer = new[] { ((SerializableInputRecord)data).InputRecord };
+                NativeMethods.WriteConsoleInput(handle, lpBuffer, lpBuffer.Length, out _);
+            }
+            else if (data.SerializerType == SerializerType.CloseCommand)
+            {
+                kill = true;
+                return;
+            }
         }
     }
 }
