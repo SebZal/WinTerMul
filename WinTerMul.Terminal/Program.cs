@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
-
-using Newtonsoft.Json;
 
 using WinTerMul.Common;
 

@@ -19,7 +19,6 @@ namespace WinTerMul
             var activeTerminalIndex = 0;
             var activeTerminal = terminals[activeTerminalIndex];
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
-            var counter = 0;
             while (true)
             {
                 PInvoke.Kernel32.ReadConsoleInput(inputHandle, out var lpBuffer, 1, out var n);
