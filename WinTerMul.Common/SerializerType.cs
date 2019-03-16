@@ -2,6 +2,7 @@
 {
     public enum SerializerType : byte
     {
-        ConsoleOutput = 1
+        Output = 1,
+        Input = 2
     }
 }

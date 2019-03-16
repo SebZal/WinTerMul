@@ -106,6 +106,16 @@ namespace WinTerMul.Terminal
         {
             kill = false;
 
+            var data = inputPipe.Read();
+            if (data?.SerializerType == SerializerType.Input)
+            {
+                NativeMethods.WriteConsoleInput(
+                    handle,
+                    new[] { ((SerializableInputRecord)data).InputRecord },
+                    1,
+                    out _);
+            }
+
             //using (var viewStream = inputMmf.CreateViewStream())
             //{
             //    if (!viewStream.CanRead)

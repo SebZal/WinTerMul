@@ -6,9 +6,10 @@ namespace WinTerMul.Common
     public static class Serializers
     {
         public static readonly ReadOnlyCollection<ISerializer> All = new ReadOnlyCollection<ISerializer>(
-            new List<ISerializer>(new[]
+            new List<ISerializer>(new ISerializer[]
             {
-                new ConsoleOutputSerializer()
+                new OutputSerializer(),
+                new InputSerializer()
             }));
     }
 }

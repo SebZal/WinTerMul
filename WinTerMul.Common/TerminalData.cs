@@ -6,7 +6,7 @@ namespace WinTerMul.Common
 {
     public class TerminalData : ISerializable
     {
-        public SerializerType SerializerType => SerializerType.ConsoleOutput;
+        public SerializerType SerializerType => SerializerType.Output;
 
         public CHAR_INFO[] lpBuffer;
         public COORD dwBufferSize;

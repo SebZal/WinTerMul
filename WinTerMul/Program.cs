@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 
 using Newtonsoft.Json;
+using WinTerMul.Common;
 
 namespace WinTerMul
 {
@@ -55,15 +56,7 @@ namespace WinTerMul
                     //    break;
                     //}
 
-                    //var data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lpBuffer));
-                    //var buffer = new byte[data.Length + 2 * sizeof(int)];
-                    //Array.Copy(BitConverter.GetBytes(++counter), buffer, 4);
-                    //Array.Copy(BitConverter.GetBytes(data.Length), 0, buffer, 4, 4);
-                    //Array.Copy(data, 0, buffer, 8, data.Length);
-                    //using (var stream = activeTerminal.In.CreateViewStream())
-                    //{
-                    //    stream.Write(buffer, 0, buffer.Length);
-                    //}
+                    activeTerminal.In.Write(new SerializableInputRecord { InputRecord = lpBuffer });
                 }
             }
         }

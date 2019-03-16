@@ -2,9 +2,9 @@
 
 namespace WinTerMul.Common
 {
-    public class ConsoleOutputSerializer : ISerializer
+    internal class OutputSerializer : ISerializer
     {
-        public SerializerType Type => SerializerType.ConsoleOutput;
+        public SerializerType Type => SerializerType.Output;
 
         public byte[] Serialize(TerminalData terminalData)
         {
