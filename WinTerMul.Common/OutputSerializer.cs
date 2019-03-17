@@ -52,7 +52,13 @@ namespace WinTerMul.Common
             };
 
             var index = sizeof(short) * 2;
-            terminalData.lpBuffer = new PInvoke.Kernel32.CHAR_INFO[data.Length / (sizeof(ushort) + sizeof(char)) - index];
+            var charInfoLength = data.Length / (sizeof(ushort) + sizeof(char)) - index;
+            if (charInfoLength < 0)
+            {
+                charInfoLength = 0;
+            }
+
+            terminalData.lpBuffer = new PInvoke.Kernel32.CHAR_INFO[charInfoLength];
             for (var i = 0; i < terminalData.lpBuffer.Length; i++)
             {
                 terminalData.lpBuffer[i].Attributes = (PInvoke.Kernel32.CharacterAttributesFlags)BitConverter.ToUInt16(data, index);
