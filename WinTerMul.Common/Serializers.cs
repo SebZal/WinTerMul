@@ -10,7 +10,8 @@ namespace WinTerMul.Common
             {
                 new OutputSerializer(),
                 new InputSerializer(),
-                new CloseCommandSerializer()
+                new CloseCommandSerializer(),
+                new ResizeCommandSerializer()
             }));
     }
 }

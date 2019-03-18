@@ -32,7 +32,7 @@ namespace WinTerMul.Common
             int nLength,
             out int lpNumberOfEventsWritten);
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool SetConsoleScreenBufferSize(IntPtr hConsoleOutput, COORD dwSize);
 
         [DllImport("kernel32.dll", SetLastError = true)]
