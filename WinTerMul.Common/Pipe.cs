@@ -95,6 +95,7 @@ namespace WinTerMul.Common
         {
             _memoryMappedFile.Dispose();
             _stream?.Dispose();
+            _sha1.Dispose();
         }
 
         private bool TryWrite(ISerializable @object, bool writeOnlyIfDataHasChanged)

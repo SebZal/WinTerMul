@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-
+using Newtonsoft.Json;
 using WinTerMul.Common;
 
 namespace WinTerMul.Terminal
@@ -55,7 +55,7 @@ namespace WinTerMul.Terminal
             {
                 Thread.Sleep(10);
                 HandleOutput(outputHandle, outputPipe);
-                HandleInput(inputHandle, ref messageCount, inputPipe, out var kill);
+                HandleInput(inputHandle, outputHandle, ref messageCount, inputPipe, out var kill);
 
                 if (kill)
                 {
@@ -99,7 +99,7 @@ namespace WinTerMul.Terminal
             outputPipe.Write(terminalData, true);
         }
 
-        private static void HandleInput(IntPtr handle, ref int messageCount, Pipe inputPipe, out bool kill)
+        private static void HandleInput(IntPtr inputHandle, IntPtr outputHandle, ref int messageCount, Pipe inputPipe, out bool kill)
         {
             kill = false;
 
@@ -111,12 +111,66 @@ namespace WinTerMul.Terminal
             else if (data.SerializerType == SerializerType.Input)
             {
                 var lpBuffer = new[] { ((SerializableInputRecord)data).InputRecord };
-                NativeMethods.WriteConsoleInput(handle, lpBuffer, lpBuffer.Length, out _);
+                NativeMethods.WriteConsoleInput(inputHandle, lpBuffer, lpBuffer.Length, out _);
             }
             else if (data.SerializerType == SerializerType.CloseCommand)
             {
                 kill = true;
                 return;
+            }
+            else if (data.SerializerType == SerializerType.ResizeCommand)
+            {
+                var resizeCommand = (ResizeCommand)data;
+
+                // Resize crashes if window size exceeds buffer size.
+                // Hence, temporary set window size to smallest possible,
+                // update buffer size, and then set the final window size.
+                var rect = new PInvoke.SMALL_RECT
+                {
+                    Top = 0,
+                    Bottom = 1,
+                    Left = 0,
+                    Right = 1
+                };
+                if (NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect))
+                {
+                    var coord = new PInvoke.COORD
+                    {
+                        X = resizeCommand.Width,
+                        Y = resizeCommand.Height
+                    };
+                    if (NativeMethods.SetConsoleScreenBufferSize(outputHandle, coord))
+                    {
+                        rect = new PInvoke.SMALL_RECT
+                        {
+                            Left = 0,
+                            Right = (short)(resizeCommand.Width - 2),
+                            Top = 0,
+                            Bottom = (short)(resizeCommand.Height - 2)
+                        };
+                        if (!NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect))
+                        {
+                            // TODO
+                            var error = PInvoke.Kernel32.GetLastError();
+                            Console.WriteLine("3: " + error.ToString());
+                            Console.WriteLine(JsonConvert.SerializeObject(rect, Formatting.Indented));
+                            PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo);
+                            Console.WriteLine(JsonConvert.SerializeObject(bufferInfo, Formatting.Indented));
+                        }
+                    }
+                    else
+                    {
+                        // TODO
+                        var error = PInvoke.Kernel32.GetLastError();
+                        Console.WriteLine("2: " + error.ToString());
+                    }
+                }
+                else
+                {
+                    // TODO
+                    var error = PInvoke.Kernel32.GetLastError();
+                    Console.WriteLine("1: " + error.ToString());
+                }
             }
         }
     }

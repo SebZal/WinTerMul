@@ -7,3 +7,6 @@ A terminal multiplexer for Windows.
 - [ ] Write tests.
 - [ ] Add license.
 - [ ] Document key shortcuts.
+- [ ] Remove PInvoke dependency.
+- [ ] Go through all kernel32 calls and handle errors.
+- [ ] Handle terminal resize.
