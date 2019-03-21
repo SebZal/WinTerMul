@@ -10,7 +10,7 @@ namespace WinTerMul.Common
 
         public byte[] Serialize(SerializableInputRecord inputRecord)
         {
-            // TODO use a better method instead of serializing to json
+            // TODO use a more efficient method instead of serializing to json
             return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(inputRecord));
         }
 

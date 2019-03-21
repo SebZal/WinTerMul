@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,7 +11,6 @@ namespace WinTerMul.Common
     {
         private const int MemorySize = ushort.MaxValue + 1;
         private const byte NoData = byte.MinValue;
-        private const byte Locked = byte.MaxValue - 1;
         private const byte Rewind = byte.MaxValue;
 
         private readonly SHA1CryptoServiceProvider _sha1;
@@ -54,24 +54,21 @@ namespace WinTerMul.Common
 
         public ISerializable Read()
         {
+            var initialStreamPosition = Stream.Position;
+
             var firstByte = Stream.ReadByte();
-            if (firstByte == NoData || firstByte == Locked)
+            if (firstByte == NoData)
             {
                 Stream.Position -= sizeof(byte);
                 return null;
             }
-            else if (firstByte == Rewind)
+            else if (firstByte == Rewind || firstByte == -1)
             {
                 Stream.Position -= sizeof(byte);
                 Stream.Write(new byte[1], 0, sizeof(byte)); // Erase rewind flag.
                 Stream.Position = 0;
                 return null;
             }
-
-            var initialStreamPosition = Stream.Position - sizeof(byte);
-
-            Stream.Position -= sizeof(byte);
-            Stream.Write(new[] { Locked }, 0, sizeof(byte));
 
             var dataLengthBuffer = new byte[sizeof(ushort)];
             Stream.Read(dataLengthBuffer, 0, dataLengthBuffer.Length);
@@ -80,12 +77,9 @@ namespace WinTerMul.Common
             Stream.Read(data, 0, data.Length);
 
             // Erase data that has been read.
-            var nullData = new byte[Stream.Position - initialStreamPosition - sizeof(byte)];
-            Stream.Position = initialStreamPosition + sizeof(byte);
-            Stream.Write(nullData, 0, nullData.Length);
+            var nullData = new byte[Stream.Position - initialStreamPosition];
             Stream.Position = initialStreamPosition;
-            Stream.Write(new byte[1], 0, sizeof(byte)); // Clear out lock last.
-            Stream.Position += nullData.Length;
+            Stream.Write(nullData, 0, nullData.Length);
 
             // TODO System.InvalidOperationException: 'Sequence contains no matching element
             // 1. start terminal, bash, cmatrix, resize => crash.
@@ -102,13 +96,6 @@ namespace WinTerMul.Common
 
         private bool TryWrite(ISerializable @object, bool writeOnlyIfDataHasChanged)
         {
-            var firstByte = Stream.ReadByte();
-            Stream.Position -= sizeof(byte);
-            if (firstByte == Locked)
-            {
-                return false;
-            }
-
             var serializer = Serializers.All.Single(x => x.Type == @object.SerializerType);
             var data = serializer.Serialize(@object);
 
@@ -127,23 +114,42 @@ namespace WinTerMul.Common
                 Stream.Write(new[] { Rewind }, 0, sizeof(byte));
                 Stream.Position = 0;
 
-                // Clear out hash, since this method must run again with same data.
-                _previousHash = new byte[_previousHash.Length];
+                // Since this method must run again with same data, generate a new hash.
+                _previousHash = _sha1.ComputeHash(Guid.NewGuid().ToByteArray()); // TODO find a better way to handle this
 
                 return false;
             }
 
+            // Check if stream is clean.
             var initialStreamPosition = Stream.Position;
-            Stream.Write(new[] { Locked }, 0, sizeof(byte)); // Lock data.
+            if (Stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+            {
+                //TODO
+                File.WriteAllText(@"C:\temp\wintermul.log", "ERROR");
+                throw new Exception();
+            }
+            Stream.Position = initialStreamPosition;
+            if (buffer.Any(x => x != 0))
+            {
+                // TODO
+                //Console.WriteLine($"BUSY_{buffer.Count(x => x != 0)}_BUSY");
+
+                // Since this method must run again with same data, generate a new hash.
+                _previousHash = _sha1.ComputeHash(Guid.NewGuid().ToByteArray()); // TODO find a better way to handle this
+
+                return false;
+            }
 
             buffer[0] = (byte)serializer.Type;
             Array.Copy(BitConverter.GetBytes((ushort)data.Length), 0, buffer, sizeof(byte), sizeof(ushort));
             Array.Copy(data, 0, buffer, sizeof(byte) + sizeof(ushort), data.Length);
 
+            // Write first byte last, so the stream is not read before everything is written.
+            Stream.Position = initialStreamPosition + sizeof(byte);
             Stream.Write(buffer, 1, buffer.Length - 1);
             Stream.Position = initialStreamPosition;
-            Stream.Write(buffer, 0, sizeof(byte)); // Unlock data by writing serializer type into first byte.
-            Stream.Position += buffer.Length - 1;
+            Stream.Write(buffer, 0, 1);
+            Stream.Position = initialStreamPosition + buffer.Length;
 
             return true;
         }

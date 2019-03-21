@@ -13,7 +13,7 @@ namespace WinTerMul.Terminal
             var outputPipeId = args[0];
             var inputPipeId = args[1];
 
-            var outputPipe = Pipe.Connect(outputPipeId);
+            var outputPipe = Pipe.Connect(outputPipeId); // TODO make sure to dispose pipes
             var inputPipe = Pipe.Connect(inputPipeId);
 
             var process = new Process
