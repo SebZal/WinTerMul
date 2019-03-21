@@ -87,6 +87,8 @@ namespace WinTerMul.Common
             Stream.Write(new byte[1], 0, sizeof(byte)); // Clear out lock last.
             Stream.Position += nullData.Length;
 
+            // TODO System.InvalidOperationException: 'Sequence contains no matching element
+            // 1. start terminal, bash, cmatrix, resize => crash.
             var serializer = Serializers.All.Single(x => x.Type == (SerializerType)firstByte);
             return serializer.Deserialize(data);
         }

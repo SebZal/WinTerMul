@@ -18,7 +18,7 @@ namespace WinTerMul
 
             var terminals = Enumerable.Range(0, 2).Select(_ => Terminal.Create()).ToArray();
 
-            //new Renderer(terminals).StartRendererThread();
+            new Renderer(terminals).StartRendererThread();
 
             var wasTabLastKey = false;
             var activeTerminalIndex = 0;

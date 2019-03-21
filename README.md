@@ -10,3 +10,4 @@ A terminal multiplexer for Windows.
 - [ ] Remove PInvoke dependency.
 - [ ] Go through all kernel32 calls and handle errors.
 - [ ] Handle terminal resize.
+- [ ] Cleanup all TODOs in source code.
