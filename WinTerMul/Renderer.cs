@@ -23,12 +23,6 @@ namespace WinTerMul
                 Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();
                 while (true) // TODO use event based system instead of polling
                 {
-                    NativeMethods.SetConsoleScreenBufferSize(handle, new PInvoke.COORD
-                    {
-                        X = 1000, // TODO adjust these values dynamically
-                        Y = 500
-                    });
-
                     Thread.Sleep(10);
 
                     short offset = 0;

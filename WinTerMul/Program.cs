@@ -51,8 +51,8 @@ namespace WinTerMul
                         {
                             previousHash = hash;
 
-                            var width = (short)((bufferInfo.srWindow.Right - bufferInfo.srWindow.Left) / 2);
-                            var height = (short)(bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top);
+                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / 2);
+                            var height = bufferInfo.dwMaximumWindowSize.Y;
                             foreach (var terminal in terminals)
                             {
                                 terminal.In.Write(new ResizeCommand { Width = width, Height = height });

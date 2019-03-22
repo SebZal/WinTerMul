@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+
 using Newtonsoft.Json;
+
 using WinTerMul.Common;
 
 namespace WinTerMul.Terminal
@@ -144,17 +146,27 @@ namespace WinTerMul.Terminal
                         rect = new PInvoke.SMALL_RECT
                         {
                             Left = 0,
-                            Right = (short)(resizeCommand.Width - 2),
+                            Right = (short)(resizeCommand.Width - 1),
                             Top = 0,
-                            Bottom = (short)(resizeCommand.Height - 2)
+                            Bottom = (short)(resizeCommand.Height - 1)
                         };
+
+                        PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo);
+                        if (rect.Right >= bufferInfo.dwMaximumWindowSize.X)
+                        {
+                            rect.Right = (short)(bufferInfo.dwMaximumWindowSize.X - 1);
+                        }
+                        if (rect.Bottom >= bufferInfo.dwMaximumWindowSize.Y)
+                        {
+                            rect.Bottom = (short)(bufferInfo.dwMaximumWindowSize.Y - 1);
+                        }
+
                         if (!NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect))
                         {
                             // TODO
                             var error = PInvoke.Kernel32.GetLastError();
                             Console.WriteLine("3: " + error.ToString());
                             Console.WriteLine(JsonConvert.SerializeObject(rect, Formatting.Indented));
-                            PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo);
                             Console.WriteLine(JsonConvert.SerializeObject(bufferInfo, Formatting.Indented));
                         }
                     }
