@@ -10,5 +10,5 @@ A terminal multiplexer for Windows.
 - [ ] Remove PInvoke dependency.
 - [ ] Go through all kernel32 calls and handle errors.
 - [x] Handle terminal resize.
-- [ ] Make sure all child processes are killed before parent process closes.
+- [x] Make sure all child processes are killed before parent process closes.
 - [ ] Cleanup all TODOs in source code.

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Management;
 using System.Threading;
 
 using Newtonsoft.Json;
@@ -14,6 +16,7 @@ namespace WinTerMul.Terminal
         {
             var outputPipeId = args[0];
             var inputPipeId = args[1];
+            var parentProcessId = int.Parse(args[2]);
 
             var outputPipe = Pipe.Connect(outputPipeId); // TODO make sure to dispose pipes
             var inputPipe = Pipe.Connect(inputPipeId);
@@ -22,7 +25,7 @@ namespace WinTerMul.Terminal
             {
                 StartInfo = new ProcessStartInfo("cmd.exe")
                 {
-                    WindowStyle = ProcessWindowStyle.Minimized
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
             process.Start();
@@ -41,9 +44,9 @@ namespace WinTerMul.Terminal
                 HandleOutput(outputHandle, outputPipe);
                 HandleInput(inputHandle, outputHandle, inputPipe, out var kill);
 
-                if (kill)
+                if (kill || IsProcessDead(parentProcessId))
                 {
-                    process.Kill(); // TODO this doesn't work if vifm is open
+                    KillAllChildProcesses(process.Id);
                     break;
                 }
             }
@@ -165,6 +168,38 @@ namespace WinTerMul.Terminal
                     var error = PInvoke.Kernel32.GetLastError();
                     Console.WriteLine("1: " + error.ToString());
                 }
+            }
+        }
+
+        private static bool IsProcessDead(int id)
+        {
+            return Process.GetProcesses().All(x => x.Id != id);
+        }
+
+        private static void KillAllChildProcesses(int id)
+        {
+            var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Process WHERE ParentProcessID=" + id);
+
+            var processes = searcher.Get();
+            if (processes != null)
+            {
+                foreach (var process in processes)
+                {
+                    KillAllChildProcesses(Convert.ToInt32(process["ProcessID"]));
+                }
+            }
+
+            try
+            {
+                var process = Process.GetProcessById(id);
+                if (process != null)
+                {
+                    process.Kill();
+                }
+            }
+            catch (ArgumentException)
+            {
+                // The process is not running or the identifier might be expired.
             }
         }
     }

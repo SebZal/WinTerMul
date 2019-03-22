@@ -13,4 +13,8 @@
     <ProjectReference Include="..\WinTerMul.Common\WinTerMul.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="System.Management" />
+  </ItemGroup>
+
 </Project>
