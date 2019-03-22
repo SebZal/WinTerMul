@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO.MemoryMappedFiles;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 
@@ -10,7 +9,8 @@ namespace WinTerMul.Common
     {
         private const int MemorySize = 524288; // 2^19
         private const int ChunkSize = ushort.MaxValue + 1;
-        private const byte NoData = byte.MinValue;
+        private const byte Empty = 0;
+        private const byte NotEmpty = 1;
 
         private readonly SHA1CryptoServiceProvider _sha1;
         private readonly MemoryMappedFile _memoryMappedFile;
@@ -44,7 +44,7 @@ namespace WinTerMul.Common
             return new Pipe(id, memoryMappedFile);
         }
 
-        public void Write(ISerializable @object, bool writeOnlyIfDataHasChanged = false)
+        public void Write(ITransferable @object, bool writeOnlyIfDataHasChanged = false)
         {
             while (!TryWrite(@object, writeOnlyIfDataHasChanged))
             {
@@ -52,12 +52,12 @@ namespace WinTerMul.Common
             }
         }
 
-        public ISerializable Read()
+        public ITransferable Read()
         {
             var initialStreamPosition = Stream.Position;
 
             var firstByte = Stream.ReadByte();
-            if (firstByte == NoData)
+            if (firstByte == Empty)
             {
                 Stream.Position -= sizeof(byte);
                 return null;
@@ -71,12 +71,11 @@ namespace WinTerMul.Common
 
             // Clear first byte in order to indicate that the content has been read.
             Stream.Position = initialStreamPosition;
-            Stream.Write(new[] { NoData }, 0, 1);
+            Stream.Write(new[] { Empty }, 0, 1);
 
             MoveStreamToNextChunk();
 
-            var serializer = Serializers.All.Single(x => x.Type == (SerializerType)firstByte);
-            return serializer.Deserialize(data);
+            return Serializer.Deserialize(data);
         }
 
         public void Dispose()
@@ -86,19 +85,18 @@ namespace WinTerMul.Common
             _sha1.Dispose();
         }
 
-        private bool TryWrite(ISerializable @object, bool writeOnlyIfDataHasChanged)
+        private bool TryWrite(ITransferable @object, bool writeOnlyIfDataHasChanged)
         {
             var initialStreamPosition = Stream.Position;
 
-            var isChunkFree = Stream.ReadByte() == NoData;
+            var isChunkFree = Stream.ReadByte() == Empty;
             Stream.Position = initialStreamPosition;
             if (!isChunkFree)
             {
                 return false;
             }
 
-            var serializer = Serializers.All.Single(x => x.Type == @object.SerializerType);
-            var data = serializer.Serialize(@object);
+            var data = Serializer.Serialize(@object);
 
             if (writeOnlyIfDataHasChanged && !HasDataChanged(data))
             {
@@ -111,7 +109,7 @@ namespace WinTerMul.Common
                 throw new InvalidOperationException("Data could not be written, it is exceeding chunk size.");
             }
 
-            buffer[0] = (byte)serializer.Type;
+            buffer[0] = NotEmpty;
             Array.Copy(BitConverter.GetBytes((ushort)data.Length), 0, buffer, sizeof(byte), sizeof(ushort));
             Array.Copy(data, 0, buffer, sizeof(byte) + sizeof(ushort), data.Length);
 

@@ -92,7 +92,7 @@ namespace WinTerMul
                             break;
                         }
 
-                        activeTerminal.In.Write(new SerializableInputRecord { InputRecord = lpBuffer });
+                        activeTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
                     }
                 }
             }

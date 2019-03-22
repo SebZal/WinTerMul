@@ -92,17 +92,17 @@ namespace WinTerMul.Terminal
             {
                 return;
             }
-            else if (data.SerializerType == SerializerType.Input)
+            else if (data.DataType == DataType.Input)
             {
-                var lpBuffer = new[] { ((SerializableInputRecord)data).InputRecord };
+                var lpBuffer = new[] { ((TransferableInputRecord)data).InputRecord };
                 NativeMethods.WriteConsoleInput(inputHandle, lpBuffer, lpBuffer.Length, out _);
             }
-            else if (data.SerializerType == SerializerType.CloseCommand)
+            else if (data.DataType == DataType.CloseCommand)
             {
                 kill = true;
                 return;
             }
-            else if (data.SerializerType == SerializerType.ResizeCommand)
+            else if (data.DataType == DataType.ResizeCommand)
             {
                 var resizeCommand = (ResizeCommand)data;
 

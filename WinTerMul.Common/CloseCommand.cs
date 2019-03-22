@@ -1,7 +1,7 @@
 ﻿namespace WinTerMul.Common
 {
-    public class CloseCommand : ISerializable
+    public class CloseCommand : ITransferable
     {
-        public SerializerType SerializerType => SerializerType.CloseCommand;
+        public DataType DataType => DataType.CloseCommand;
     }
 }

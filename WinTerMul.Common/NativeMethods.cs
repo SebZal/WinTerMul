@@ -9,7 +9,7 @@ namespace WinTerMul.Common
 {
     public static class NativeMethods
     {
-        [DllImport("kernel32.dll", EntryPoint = "ReadConsoleOutputA", CharSet = CharSet.Ansi, SetLastError = true)]
+        [DllImport("kernel32.dll", EntryPoint = "ReadConsoleOutputW", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern bool ReadConsoleOutput(
             IntPtr hConsoleOutput,
             [Out] CHAR_INFO[] lpBuffer,
@@ -17,7 +17,7 @@ namespace WinTerMul.Common
             COORD dwBufferCoord,
             ref SMALL_RECT lpReadRegion);
 
-        [DllImport("kernel32.dll", EntryPoint = "WriteConsoleOutputA", CharSet = CharSet.Ansi, SetLastError = true)]
+        [DllImport("kernel32.dll", EntryPoint = "WriteConsoleOutputW", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern bool WriteConsoleOutput(
             IntPtr hConsoleOutput,
             CHAR_INFO[] lpBuffer,

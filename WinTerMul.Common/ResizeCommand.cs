@@ -1,8 +1,8 @@
 ﻿namespace WinTerMul.Common
 {
-    public class ResizeCommand : ISerializable
+    public class ResizeCommand : ITransferable
     {
-        public SerializerType SerializerType => SerializerType.ResizeCommand;
+        public DataType DataType => DataType.ResizeCommand;
 
         public short Width { get; set; }
         public short Height { get; set; }
