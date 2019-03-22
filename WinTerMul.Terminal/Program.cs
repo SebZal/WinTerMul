@@ -73,8 +73,8 @@ namespace WinTerMul.Terminal
                 throw new Exception();
             }
 
-            var width = (short)(bufferInfo.srWindow.Right - bufferInfo.srWindow.Left);
-            var height = (short)(bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top);
+            var width = bufferInfo.dwSize.X;
+            var height = bufferInfo.dwSize.Y;
             var terminalData = new TerminalData
             {
                 lpBuffer = new PInvoke.Kernel32.CHAR_INFO[width * height],
