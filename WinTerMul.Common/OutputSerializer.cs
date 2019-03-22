@@ -8,13 +8,25 @@ namespace WinTerMul.Common
 
         public byte[] Serialize(TerminalData terminalData)
         {
-            var data = new byte[sizeof(short) * 2 + terminalData.lpBuffer.Length * (sizeof(ushort) + sizeof(char))];
+            var data = new byte[sizeof(short) * 6 + terminalData.lpBuffer.Length * (sizeof(ushort) + sizeof(char))];
 
             var index = 0;
             Array.Copy(BitConverter.GetBytes(terminalData.dwBufferSize.X), 0, data, index, sizeof(short));
             index += sizeof(short);
 
             Array.Copy(BitConverter.GetBytes(terminalData.dwBufferSize.Y), 0, data, index, sizeof(short));
+            index += sizeof(short);
+
+            Array.Copy(BitConverter.GetBytes(terminalData.lpWriteRegion.Left), 0, data, index, sizeof(short));
+            index += sizeof(short);
+
+            Array.Copy(BitConverter.GetBytes(terminalData.lpWriteRegion.Right), 0, data, index, sizeof(short));
+            index += sizeof(short);
+
+            Array.Copy(BitConverter.GetBytes(terminalData.lpWriteRegion.Top), 0, data, index, sizeof(short));
+            index += sizeof(short);
+
+            Array.Copy(BitConverter.GetBytes(terminalData.lpWriteRegion.Bottom), 0, data, index, sizeof(short));
             index += sizeof(short);
 
             for (var i = 0; i < terminalData.lpBuffer.Length; i++)
@@ -43,21 +55,18 @@ namespace WinTerMul.Common
                 }
             };
 
-            terminalData.lpWriteRegion = new PInvoke.SMALL_RECT
-            {
-                Left = 0,
-                Right = terminalData.dwBufferSize.X,
-                Top = 0,
-                Bottom = terminalData.dwBufferSize.Y
-            };
-
+            terminalData.lpWriteRegion = new PInvoke.SMALL_RECT();
             var index = sizeof(short) * 2;
-            var charInfoLength = data.Length / (sizeof(ushort) + sizeof(char)) - index;
-            if (charInfoLength < 0)
-            {
-                charInfoLength = 0;
-            }
+            terminalData.lpWriteRegion.Left = BitConverter.ToInt16(data, index);
+            index += sizeof(short);
+            terminalData.lpWriteRegion.Right = BitConverter.ToInt16(data, index);
+            index += sizeof(short);
+            terminalData.lpWriteRegion.Top = BitConverter.ToInt16(data, index);
+            index += sizeof(short);
+            terminalData.lpWriteRegion.Bottom = BitConverter.ToInt16(data, index);
+            index += sizeof(short);
 
+            var charInfoLength = (data.Length - index) / (sizeof(ushort) + sizeof(char));
             terminalData.lpBuffer = new PInvoke.Kernel32.CHAR_INFO[charInfoLength];
             for (var i = 0; i < terminalData.lpBuffer.Length; i++)
             {
