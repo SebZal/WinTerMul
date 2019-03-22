@@ -84,6 +84,9 @@ namespace WinTerMul.Terminal
                 throw new Exception();
             }
 
+            NativeMethods.GetConsoleCursorInfo(handle, out var cursorInfo);
+            terminalData.CursorInfo = cursorInfo;
+
             outputPipe.Write(terminalData, true);
         }
 

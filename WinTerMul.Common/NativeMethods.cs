@@ -40,5 +40,22 @@ namespace WinTerMul.Common
             IntPtr hConsoleOutput,
             bool bAbsolute,
             ref SMALL_RECT lpConsoleWindow);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool GetConsoleCursorInfo(
+            IntPtr hConsoleOutput,
+            out CONSOLE_CURSOR_INFO lpConsoleCursorInfo);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleCursorInfo(
+            IntPtr hConsoleOutput,
+            ref CONSOLE_CURSOR_INFO lpConsoleCursorInfo);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct CONSOLE_CURSOR_INFO
+        {
+            public uint Size;
+            public bool Visible;
+        }
     }
 }

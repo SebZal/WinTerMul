@@ -46,6 +46,7 @@ namespace WinTerMul
                             {
                                 terminalData.dwCursorPosition.X += offset;
                                 PInvoke.Kernel32.SetConsoleCursorPosition(handle, terminalData.dwCursorPosition);
+                                NativeMethods.SetConsoleCursorInfo(handle, ref terminalData.CursorInfo);
                             }
 
                             width = terminalData.dwBufferSize.X;
