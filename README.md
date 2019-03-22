@@ -11,4 +11,5 @@ A terminal multiplexer for Windows.
 - [ ] Go through all kernel32 calls and handle errors.
 - [x] Handle terminal resize.
 - [x] Make sure all child processes are killed before parent process closes.
+- [ ] Display caret (only in active pane), handle insert mode as well.
 - [ ] Cleanup all TODOs in source code.

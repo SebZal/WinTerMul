@@ -42,6 +42,12 @@ namespace WinTerMul
                                 terminalData.dwBufferCoord,
                                 ref terminalData.lpWriteRegion);
 
+                            if (Program.ActiveTerminal == terminal)
+                            {
+                                terminalData.dwCursorPosition.X += offset;
+                                PInvoke.Kernel32.SetConsoleCursorPosition(handle, terminalData.dwCursorPosition);
+                            }
+
                             width = terminalData.dwBufferSize.X;
                             previousWidths[terminal] = width;
                         }

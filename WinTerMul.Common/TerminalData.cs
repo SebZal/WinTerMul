@@ -12,5 +12,6 @@ namespace WinTerMul.Common
         public COORD dwBufferSize;
         public COORD dwBufferCoord;
         public SMALL_RECT lpWriteRegion;
+        public COORD dwCursorPosition;
     }
 }

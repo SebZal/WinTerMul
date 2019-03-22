@@ -67,7 +67,8 @@ namespace WinTerMul.Terminal
                 lpBuffer = new PInvoke.Kernel32.CHAR_INFO[width * height],
                 dwBufferSize = new PInvoke.COORD { X = width, Y = height },
                 dwBufferCoord = new PInvoke.COORD { X = 0, Y = 0 },
-                lpWriteRegion = bufferInfo.srWindow
+                lpWriteRegion = bufferInfo.srWindow,
+                dwCursorPosition = bufferInfo.dwCursorPosition
             };
 
             var isSuccess = NativeMethods.ReadConsoleOutput(

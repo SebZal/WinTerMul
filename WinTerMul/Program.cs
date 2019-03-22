@@ -12,6 +12,8 @@ namespace WinTerMul
 {
     internal class Program
     {
+        internal static Terminal ActiveTerminal { get; private set; }
+
         private static void Main(string[] args)
         {
             // TODO close created terminals when this process is killed
@@ -22,7 +24,7 @@ namespace WinTerMul
 
             var wasTabLastKey = false;
             var activeTerminalIndex = 0;
-            var activeTerminal = terminals[activeTerminalIndex];
+            ActiveTerminal = terminals[activeTerminalIndex];
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
             var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
@@ -73,7 +75,7 @@ namespace WinTerMul
                         {
                             wasTabLastKey = true;
                             activeTerminalIndex = ++activeTerminalIndex % terminals.Length;
-                            activeTerminal = terminals[activeTerminalIndex];
+                            ActiveTerminal = terminals[activeTerminalIndex];
                             Console.Beep(); // TODO remove this
                             continue;
                         }
@@ -92,7 +94,7 @@ namespace WinTerMul
                             break;
                         }
 
-                        activeTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
+                        ActiveTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
                     }
                 }
             }
