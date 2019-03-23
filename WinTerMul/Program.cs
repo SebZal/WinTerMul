@@ -35,6 +35,11 @@ namespace WinTerMul
                 {
                     Thread.Sleep(10);
 
+                    if (terminals.All(x => x.Process.HasExited))
+                    {
+                        break;
+                    }
+
                     if (PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo))
                     {
                         var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bufferInfo)));
