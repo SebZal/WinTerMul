@@ -28,7 +28,7 @@ namespace WinTerMul
 
             using (var sha1 = new SHA1CryptoServiceProvider())
             {
-                var wasLastKeyCtrlB = false;
+                var wasLastKeyCtrlS = false;
 
                 var previousHash = new byte[sha1.HashSize / 8];
                 while (true)
@@ -90,39 +90,45 @@ namespace WinTerMul
                     PInvoke.Kernel32.ReadConsoleInput(inputHandle, out var lpBuffer, 1, out var n);
                     if (lpBuffer.EventType == PInvoke.Kernel32.InputEventTypeFlag.KEY_EVENT)
                     {
-                        if (wasLastKeyCtrlB && lpBuffer.Event.KeyEvent.uChar.UnicodeChar != '')
+                        if (wasLastKeyCtrlS && lpBuffer.Event.KeyEvent.uChar.UnicodeChar != '')
                         {
                             switch (lpBuffer.Event.KeyEvent.uChar.UnicodeChar)
                             {
-                                case 'b':
-                                case '':
+                                case 's':
+                                case '':
                                 case '\0':
                                 case '\u000f':
                                     break;
-                                case 'o':
+                                case 'l':
                                     activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
                                     ActiveTerminal = Terminals[activeTerminalIndex];
-                                    wasLastKeyCtrlB = false;
+                                    wasLastKeyCtrlS = false;
                                     break;
-                                case '%':
+                                case 'h':
+                                    activeTerminalIndex = --activeTerminalIndex < 0 ? Terminals.Length - 1 : activeTerminalIndex;
+                                    ActiveTerminal = Terminals[activeTerminalIndex];
+                                    wasLastKeyCtrlS = false;
+                                    break;
+                                case 'v':
                                     ActiveTerminal = Terminal.Create();
                                     Terminals = Terminals.Concat(new[] { ActiveTerminal }).ToArray();
                                     activeTerminalIndex = Terminals.Length - 1;
                                     // Force resize
                                     previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
-                                    wasLastKeyCtrlB = false;
+                                    wasLastKeyCtrlS = false;
                                     break;
+                                //case 'h': // TODO horizontal split
                                 default:
-                                    wasLastKeyCtrlB = false;
+                                    wasLastKeyCtrlS = false;
                                     break;
                             }
 
                             continue;
                         }
 
-                        if (lpBuffer.Event.KeyEvent.uChar.UnicodeChar == '') // CTRL + b
+                        if (lpBuffer.Event.KeyEvent.uChar.UnicodeChar == '') // CTRL + s
                         {
-                            wasLastKeyCtrlB = true;
+                            wasLastKeyCtrlS = true;
                             continue;
                         }
 
