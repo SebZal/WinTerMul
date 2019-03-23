@@ -18,36 +18,38 @@ namespace WinTerMul.Terminal
             var inputPipeId = args[1];
             var parentProcessId = int.Parse(args[2]);
 
-            var outputPipe = Pipe.Connect(outputPipeId); // TODO make sure to dispose pipes
-            var inputPipe = Pipe.Connect(inputPipeId);
-
-            var process = new Process
+            using (var outputPipe = Pipe.Connect(outputPipeId))
+            using (var inputPipe = Pipe.Connect(inputPipeId))
             {
-                StartInfo = new ProcessStartInfo("cmd.exe")
+
+                var process = new Process
                 {
-                    WindowStyle = ProcessWindowStyle.Hidden
-                }
-            };
-            process.Start();
+                    StartInfo = new ProcessStartInfo("cmd.exe")
+                    {
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }
+                };
+                process.Start();
 
-            Thread.Sleep(500); // TODO
+                Thread.Sleep(500); // TODO
 
-            PInvoke.Kernel32.FreeConsole();
-            PInvoke.Kernel32.AttachConsole(process.Id);
+                PInvoke.Kernel32.FreeConsole();
+                PInvoke.Kernel32.AttachConsole(process.Id);
 
-            var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
-            var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
+                var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
+                var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
 
-            while (!process.HasExited) // TODO use event based system instead of polling
-            {
-                Thread.Sleep(10);
-                HandleOutput(outputHandle, outputPipe);
-                HandleInput(inputHandle, outputHandle, inputPipe, out var kill);
-
-                if (kill || IsProcessDead(parentProcessId))
+                while (!process.HasExited) // TODO use event based system instead of polling
                 {
-                    KillAllChildProcesses(process.Id);
-                    break;
+                    Thread.Sleep(10);
+                    HandleOutput(outputHandle, outputPipe);
+                    HandleInput(inputHandle, outputHandle, inputPipe, out var kill);
+
+                    if (kill || IsProcessDead(parentProcessId))
+                    {
+                        KillAllChildProcesses(process.Id);
+                        break;
+                    }
                 }
             }
         }

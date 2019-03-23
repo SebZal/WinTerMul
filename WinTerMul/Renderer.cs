@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 using WinTerMul.Common;
@@ -19,7 +20,7 @@ namespace WinTerMul
                     Thread.Sleep(10);
 
                     short offset = 0;
-                    foreach (var terminal in Program.Terminals)
+                    foreach (var terminal in Program.Terminals.Where(x => !x.Process.HasExited))
                     {
                         short width = 500;
 

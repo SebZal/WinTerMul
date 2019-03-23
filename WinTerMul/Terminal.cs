@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 using PInvoke;
 
@@ -8,7 +9,7 @@ using static WinTerMul.Common.NativeMethods;
 
 namespace WinTerMul
 {
-    internal class Terminal
+    internal class Terminal : IDisposable
     {
         public Process Process { get; private set; }
         public Pipe Out { get; private set; }
@@ -36,6 +37,13 @@ namespace WinTerMul
             terminal.Process.Start();
 
             return terminal;
+        }
+
+        public void Dispose()
+        {
+            Out.Dispose();
+            In.Dispose();
+            Process.Dispose();
         }
     }
 }

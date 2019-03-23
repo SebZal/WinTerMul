@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,19 +36,30 @@ namespace WinTerMul
                 {
                     Thread.Sleep(10);
 
-                    var numTerminals = Terminals.Length;
-                    Terminals = Terminals.Where(x => !x.Process.HasExited).ToArray();
-                    if (numTerminals != Terminals.Length)
+                    var newTerminals = new List<Terminal>();
+                    foreach (var terminal in Terminals)
                     {
-                        if (Terminals.Length > 0 && !Terminals.Contains(ActiveTerminal))
+                        if (terminal.Process.HasExited)
                         {
-                            activeTerminalIndex = 0;
-                            ActiveTerminal = Terminals[activeTerminalIndex];
+                            terminal.Dispose();
+                        }
+                        else
+                        {
+                            newTerminals.Add(terminal);
+                        }
+                    }
+                    if (newTerminals.Count != Terminals.Length)
+                    {
+                        if (newTerminals.Count > 0 && !newTerminals.Contains(ActiveTerminal))
+                        {
+                            activeTerminalIndex = --activeTerminalIndex < 0 ? 0 : activeTerminalIndex;
+                            ActiveTerminal = newTerminals[activeTerminalIndex];
                         }
 
                         // Force resize
                         previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
                     }
+                    Terminals = newTerminals.ToArray();
                     if (Terminals.Length == 0)
                     {
                         break;
