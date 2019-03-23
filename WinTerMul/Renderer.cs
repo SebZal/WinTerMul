@@ -59,7 +59,6 @@ namespace WinTerMul
                         offset += width;
                     }
 
-                    // TODO This causes flickering when moving cursor and htop or cmatrix is open.
                     PInvoke.Kernel32.SetConsoleCursorPosition(handle, Program.ActiveTerminal.CursorPosition);
                     var cursorInfo = Program.ActiveTerminal.CursorInfo;
                     NativeMethods.SetConsoleCursorInfo(handle, ref cursorInfo);

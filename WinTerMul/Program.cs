@@ -16,8 +16,6 @@ namespace WinTerMul
 
         private static void Main(string[] args)
         {
-            // TODO close created terminals when this process is killed
-
             var terminals = Enumerable.Range(0, 2).Select(_ => Terminal.Create()).ToArray();
 
             new Renderer(terminals).StartRendererThread();
@@ -35,13 +33,15 @@ namespace WinTerMul
                 {
                     Thread.Sleep(10);
 
-                    if (terminals.All(x => x.Process.HasExited))
+                    terminals = terminals.Where(x => !x.Process.HasExited).ToArray();
+                    if (terminals.Length == 0)
                     {
                         break;
                     }
 
                     if (PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo))
                     {
+                        bufferInfo.dwCursorPosition = new PInvoke.COORD(); // Ignore cursor position
                         var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bufferInfo)));
 
                         var isHashDifferent = false;
@@ -58,7 +58,7 @@ namespace WinTerMul
                         {
                             previousHash = hash;
 
-                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / 2);
+                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / terminals.Length);
                             var height = bufferInfo.dwMaximumWindowSize.Y;
                             foreach (var terminal in terminals)
                             {
