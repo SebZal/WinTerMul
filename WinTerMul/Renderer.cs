@@ -7,13 +7,6 @@ namespace WinTerMul
 {
     internal class Renderer
     {
-        private readonly IEnumerable<Terminal> _terminals;
-
-        public Renderer(IEnumerable<Terminal> terminals)
-        {
-            _terminals = terminals;
-        }
-
         public void StartRendererThread()
         {
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
@@ -26,7 +19,7 @@ namespace WinTerMul
                     Thread.Sleep(10);
 
                     short offset = 0;
-                    foreach (var terminal in _terminals)
+                    foreach (var terminal in Program.Terminals)
                     {
                         short width = 500;
 

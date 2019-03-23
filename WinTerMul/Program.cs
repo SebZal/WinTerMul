@@ -13,16 +13,17 @@ namespace WinTerMul
     internal class Program
     {
         internal static Terminal ActiveTerminal { get; private set; }
+        internal static Terminal[] Terminals { get; private set; }
 
         private static void Main(string[] args)
         {
-            var terminals = Enumerable.Range(0, 2).Select(_ => Terminal.Create()).ToArray();
+            Terminals = Enumerable.Range(0, 2).Select(_ => Terminal.Create()).ToArray();
 
-            new Renderer(terminals).StartRendererThread();
+            new Renderer().StartRendererThread();
 
             var wasTabLastKey = false;
             var activeTerminalIndex = 0;
-            ActiveTerminal = terminals[activeTerminalIndex];
+            ActiveTerminal = Terminals[activeTerminalIndex];
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
             var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
@@ -33,8 +34,20 @@ namespace WinTerMul
                 {
                     Thread.Sleep(10);
 
-                    terminals = terminals.Where(x => !x.Process.HasExited).ToArray();
-                    if (terminals.Length == 0)
+                    var numTerminals = Terminals.Length;
+                    Terminals = Terminals.Where(x => !x.Process.HasExited).ToArray();
+                    if (numTerminals != Terminals.Length)
+                    {
+                        if (Terminals.Length > 0 && !Terminals.Contains(ActiveTerminal))
+                        {
+                            activeTerminalIndex = 0;
+                            ActiveTerminal = Terminals[activeTerminalIndex];
+                        }
+
+                        // Force resize
+                        previousHash = new byte[sha1.HashSize / 8];
+                    }
+                    if (Terminals.Length == 0)
                     {
                         break;
                     }
@@ -58,9 +71,9 @@ namespace WinTerMul
                         {
                             previousHash = hash;
 
-                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / terminals.Length);
+                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / Terminals.Length);
                             var height = bufferInfo.dwMaximumWindowSize.Y;
-                            foreach (var terminal in terminals)
+                            foreach (var terminal in Terminals)
                             {
                                 terminal.In.Write(new ResizeCommand { Width = width, Height = height });
                             }
@@ -79,9 +92,8 @@ namespace WinTerMul
                         if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 9 && !wasTabLastKey)
                         {
                             wasTabLastKey = true;
-                            activeTerminalIndex = ++activeTerminalIndex % terminals.Length;
-                            ActiveTerminal = terminals[activeTerminalIndex];
-                            Console.Beep(); // TODO remove this
+                            activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
+                            ActiveTerminal = Terminals[activeTerminalIndex];
                             continue;
                         }
                         else
