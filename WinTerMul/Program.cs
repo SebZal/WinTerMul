@@ -104,7 +104,7 @@ namespace WinTerMul
                                     ActiveTerminal = Terminals[activeTerminalIndex];
                                     wasLastKeyCtrlB = false;
                                     break;
-                                case '"':
+                                case '%':
                                     ActiveTerminal = Terminal.Create();
                                     Terminals = Terminals.Concat(new[] { ActiveTerminal }).ToArray();
                                     activeTerminalIndex = Terminals.Length - 1;
