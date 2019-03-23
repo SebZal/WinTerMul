@@ -29,7 +29,8 @@ namespace WinTerMul
             {
                 StartInfo = new ProcessStartInfo("WinTerMul.Terminal.exe")
                 {
-                    Arguments = $"{terminal.Out.Id} {terminal.In.Id} {Process.GetCurrentProcess().Id}"
+                    Arguments = $"{terminal.Out.Id} {terminal.In.Id} {Process.GetCurrentProcess().Id}",
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
             terminal.Process.Start();
