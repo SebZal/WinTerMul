@@ -13,5 +13,5 @@ A terminal multiplexer for Windows.
 - [x] Make sure all child processes are killed before parent process closes.
 - [x] Kill parent process if all child processes are killed.
 - [x] Display caret (only in active pane), handle insert mode as well. Don't display caret in vifm.
-- [ ] Move caret to active pane after pane switch.
+- [x] Move caret to active pane after pane switch.
 - [ ] Cleanup all TODOs in source code.

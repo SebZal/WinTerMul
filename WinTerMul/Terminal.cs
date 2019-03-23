@@ -1,6 +1,10 @@
 ﻿using System.Diagnostics;
 
+using PInvoke;
+
 using WinTerMul.Common;
+
+using static WinTerMul.Common.NativeMethods;
 
 namespace WinTerMul
 {
@@ -9,6 +13,9 @@ namespace WinTerMul
         public Process Process { get; private set; }
         public Pipe Out { get; private set; }
         public Pipe In { get; private set; }
+
+        public COORD CursorPosition { get; set; }
+        public CONSOLE_CURSOR_INFO CursorInfo { get; set; }
 
         public static Terminal Create()
         {

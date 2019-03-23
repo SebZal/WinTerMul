@@ -35,6 +35,8 @@ namespace WinTerMul
                         {
                             terminalData.lpWriteRegion.Left += offset;
                             terminalData.lpWriteRegion.Right += offset;
+                            terminalData.dwCursorPosition.X += offset;
+
                             NativeMethods.WriteConsoleOutput(
                                 handle,
                                 terminalData.lpBuffer,
@@ -42,12 +44,9 @@ namespace WinTerMul
                                 terminalData.dwBufferCoord,
                                 ref terminalData.lpWriteRegion);
 
-                            if (Program.ActiveTerminal == terminal)
-                            {
-                                terminalData.dwCursorPosition.X += offset;
-                                PInvoke.Kernel32.SetConsoleCursorPosition(handle, terminalData.dwCursorPosition);
-                                NativeMethods.SetConsoleCursorInfo(handle, ref terminalData.CursorInfo);
-                            }
+                            terminal.CursorInfo = terminalData.CursorInfo;
+                            terminal.CursorPosition = terminalData.dwCursorPosition;
+
 
                             width = terminalData.dwBufferSize.X;
                             previousWidths[terminal] = width;
@@ -59,6 +58,10 @@ namespace WinTerMul
 
                         offset += width;
                     }
+
+                    PInvoke.Kernel32.SetConsoleCursorPosition(handle, Program.ActiveTerminal.CursorPosition);
+                    var cursorInfo = Program.ActiveTerminal.CursorInfo;
+                    NativeMethods.SetConsoleCursorInfo(handle, ref cursorInfo);
                 }
             })
             {
