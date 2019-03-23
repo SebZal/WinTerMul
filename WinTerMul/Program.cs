@@ -21,7 +21,6 @@ namespace WinTerMul
 
             new Renderer().StartRendererThread();
 
-            var wasTabLastKey = false;
             var activeTerminalIndex = 0;
             ActiveTerminal = Terminals[activeTerminalIndex];
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
@@ -29,6 +28,8 @@ namespace WinTerMul
 
             using (var sha1 = new SHA1CryptoServiceProvider())
             {
+                var wasLastKeyCtrlB = false;
+
                 var previousHash = new byte[sha1.HashSize / 8];
                 while (true)
                 {
@@ -45,7 +46,7 @@ namespace WinTerMul
                         }
 
                         // Force resize
-                        previousHash = new byte[sha1.HashSize / 8];
+                        previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
                     }
                     if (Terminals.Length == 0)
                     {
@@ -89,16 +90,40 @@ namespace WinTerMul
                     PInvoke.Kernel32.ReadConsoleInput(inputHandle, out var lpBuffer, 1, out var n);
                     if (lpBuffer.EventType == PInvoke.Kernel32.InputEventTypeFlag.KEY_EVENT)
                     {
-                        if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 9 && !wasTabLastKey)
+                        if (wasLastKeyCtrlB && lpBuffer.Event.KeyEvent.uChar.UnicodeChar != '')
                         {
-                            wasTabLastKey = true;
-                            activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
-                            ActiveTerminal = Terminals[activeTerminalIndex];
+                            switch (lpBuffer.Event.KeyEvent.uChar.UnicodeChar)
+                            {
+                                case 'b':
+                                case '':
+                                case '\0':
+                                case '\u000f':
+                                    break;
+                                case 'o':
+                                    activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
+                                    ActiveTerminal = Terminals[activeTerminalIndex];
+                                    wasLastKeyCtrlB = false;
+                                    break;
+                                case '"':
+                                    ActiveTerminal = Terminal.Create();
+                                    Terminals = Terminals.Concat(new[] { ActiveTerminal }).ToArray();
+                                    activeTerminalIndex = Terminals.Length - 1;
+                                    // Force resize
+                                    previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
+                                    wasLastKeyCtrlB = false;
+                                    break;
+                                default:
+                                    wasLastKeyCtrlB = false;
+                                    break;
+                            }
+
                             continue;
                         }
-                        else
+
+                        if (lpBuffer.Event.KeyEvent.uChar.UnicodeChar == '') // CTRL + b
                         {
-                            wasTabLastKey = false;
+                            wasLastKeyCtrlB = true;
+                            continue;
                         }
 
                         ActiveTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
