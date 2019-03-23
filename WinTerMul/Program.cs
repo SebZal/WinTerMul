@@ -89,16 +89,6 @@ namespace WinTerMul
                             wasTabLastKey = false;
                         }
 
-                        // TODO temporary close function
-                        if (lpBuffer.Event.KeyEvent.wVirtualKeyCode == 0x1B) // ESC
-                        {
-                            foreach (var terminal in terminals)
-                            {
-                                terminal.In.Write(new CloseCommand());
-                            }
-                            break;
-                        }
-
                         ActiveTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
                     }
                 }
