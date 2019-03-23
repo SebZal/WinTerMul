@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 using WinTerMul.Common;
@@ -8,6 +8,13 @@ namespace WinTerMul
 {
     internal class Renderer
     {
+        private readonly TerminalContainer _terminalContainer;
+
+        public Renderer(TerminalContainer terminalContainer)
+        {
+            _terminalContainer = terminalContainer;
+        }
+
         public void StartRendererThread()
         {
             var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
@@ -20,11 +27,21 @@ namespace WinTerMul
                     Thread.Sleep(10);
 
                     short offset = 0;
-                    foreach (var terminal in Program.Terminals.Where(x => !x.Process.HasExited))
+                    foreach (var terminal in _terminalContainer.GetTerminals())
                     {
                         short width = 500;
 
-                        var terminalData = (TerminalData)terminal.Out.Read();
+                        TerminalData terminalData = null;
+                        try
+                        {
+                            terminalData = (TerminalData)terminal.Out.Read();
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // Process has exited, will be cleaned up by terminal container.
+                            continue;
+                        }
+
                         if (terminalData != null)
                         {
                             terminalData.lpWriteRegion.Left += offset;
@@ -53,9 +70,18 @@ namespace WinTerMul
                         offset += width;
                     }
 
-                    PInvoke.Kernel32.SetConsoleCursorPosition(handle, Program.ActiveTerminal.CursorPosition);
-                    var cursorInfo = Program.ActiveTerminal.CursorInfo;
-                    NativeMethods.SetConsoleCursorInfo(handle, ref cursorInfo);
+                    var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
+                    if (cursorPosition.HasValue)
+                    {
+                        PInvoke.Kernel32.SetConsoleCursorPosition(handle, cursorPosition.Value);
+                    }
+
+                    var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
+                    if (cursorInfo.HasValue)
+                    {
+                        var ci = cursorInfo.Value;
+                        NativeMethods.SetConsoleCursorInfo(handle, ref ci);
+                    }
                 }
             })
             {

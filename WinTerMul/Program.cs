@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -13,17 +11,12 @@ namespace WinTerMul
 {
     internal class Program
     {
-        internal static Terminal ActiveTerminal { get; private set; }
-        internal static Terminal[] Terminals { get; private set; }
-
         private static void Main(string[] args)
         {
-            Terminals = Enumerable.Range(0, 2).Select(_ => Terminal.Create()).ToArray();
+            var terminalContainer = new TerminalContainer(Terminal.Create());
 
-            new Renderer().StartRendererThread();
+            new Renderer(terminalContainer).StartRendererThread();
 
-            var activeTerminalIndex = 0;
-            ActiveTerminal = Terminals[activeTerminalIndex];
             var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
             var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
 
@@ -36,31 +29,8 @@ namespace WinTerMul
                 {
                     Thread.Sleep(10);
 
-                    var newTerminals = new List<Terminal>();
-                    foreach (var terminal in Terminals)
-                    {
-                        if (terminal.Process.HasExited)
-                        {
-                            terminal.Dispose();
-                        }
-                        else
-                        {
-                            newTerminals.Add(terminal);
-                        }
-                    }
-                    if (newTerminals.Count != Terminals.Length)
-                    {
-                        if (newTerminals.Count > 0 && !newTerminals.Contains(ActiveTerminal))
-                        {
-                            activeTerminalIndex = --activeTerminalIndex < 0 ? 0 : activeTerminalIndex;
-                            ActiveTerminal = newTerminals[activeTerminalIndex];
-                        }
-
-                        // Force resize
-                        previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
-                    }
-                    Terminals = newTerminals.ToArray();
-                    if (Terminals.Length == 0)
+                    var terminals = terminalContainer.GetTerminals();
+                    if (terminals.Count == 0)
                     {
                         break;
                     }
@@ -68,6 +38,7 @@ namespace WinTerMul
                     if (PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo))
                     {
                         bufferInfo.dwCursorPosition = new PInvoke.COORD(); // Ignore cursor position
+                        bufferInfo.dwMaximumWindowSize.X  = (short)(bufferInfo.dwMaximumWindowSize.X / terminals.Count);
                         var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bufferInfo)));
 
                         var isHashDifferent = false;
@@ -84,12 +55,24 @@ namespace WinTerMul
                         {
                             previousHash = hash;
 
-                            var width = (short)(bufferInfo.dwMaximumWindowSize.X / Terminals.Length);
-                            var height = bufferInfo.dwMaximumWindowSize.Y;
-                            foreach (var terminal in Terminals)
+                            foreach (var terminal in terminals)
                             {
-                                terminal.In.Write(new ResizeCommand { Width = width, Height = height });
+                                try
+                                {
+                                    terminal.In.Write(new ResizeCommand
+                                    {
+                                        Width = bufferInfo.dwMaximumWindowSize.X,
+                                        Height = bufferInfo.dwMaximumWindowSize.Y
+                                    });
+                                }
+                                catch (ObjectDisposedException)
+                                {
+                                    // Process has exited, next iteration should resend correct data.
+                                    break;
+                                }
                             }
+
+                            continue;
                         }
                     }
                     else
@@ -115,18 +98,13 @@ namespace WinTerMul
                                     wasLastKeyCtrlS = true;
                                     break;
                                 case 'l':
-                                    activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
-                                    ActiveTerminal = Terminals[activeTerminalIndex];
+                                    terminalContainer.SetNextTerminalActive();
                                     break;
                                 case 'h':
-                                    activeTerminalIndex = --activeTerminalIndex < 0 ? Terminals.Length - 1 : activeTerminalIndex;
-                                    ActiveTerminal = Terminals[activeTerminalIndex];
+                                    terminalContainer.SetPreviousTerminalActive();
                                     break;
                                 case 'v':
-                                    ActiveTerminal = Terminal.Create();
-                                    var terminalList = Terminals.ToList();
-                                    terminalList.Insert(++activeTerminalIndex, ActiveTerminal);
-                                    Terminals = terminalList.ToArray();
+                                    terminalContainer.AddTerminal(Terminal.Create());
                                     // Force resize
                                     previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
                                     break;
@@ -144,7 +122,15 @@ namespace WinTerMul
                             continue;
                         }
 
-                        ActiveTerminal.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
+                        try
+                        {
+                            terminalContainer.ActiveTerminal?.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // Process has exited, new active terminal will be set in next iteration.
+                            continue;
+                        }
                     }
                 }
             }
