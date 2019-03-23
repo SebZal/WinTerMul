@@ -182,6 +182,11 @@ namespace WinTerMul.Terminal
 
         private static void KillAllChildProcesses(int id)
         {
+            if (id == 0)
+            {
+                return;
+            }
+
             var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Process WHERE ParentProcessID=" + id);
 
             var processes = searcher.Get();
