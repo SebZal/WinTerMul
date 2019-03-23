@@ -92,34 +92,34 @@ namespace WinTerMul
                     {
                         if (wasLastKeyCtrlS && lpBuffer.Event.KeyEvent.uChar.UnicodeChar != '')
                         {
+                            wasLastKeyCtrlS = false;
+
                             switch (lpBuffer.Event.KeyEvent.uChar.UnicodeChar)
                             {
                                 case 's':
                                 case '':
                                 case '\0':
                                 case '\u000f':
+                                    wasLastKeyCtrlS = true;
                                     break;
                                 case 'l':
                                     activeTerminalIndex = ++activeTerminalIndex % Terminals.Length;
                                     ActiveTerminal = Terminals[activeTerminalIndex];
-                                    wasLastKeyCtrlS = false;
                                     break;
                                 case 'h':
                                     activeTerminalIndex = --activeTerminalIndex < 0 ? Terminals.Length - 1 : activeTerminalIndex;
                                     ActiveTerminal = Terminals[activeTerminalIndex];
-                                    wasLastKeyCtrlS = false;
                                     break;
                                 case 'v':
                                     ActiveTerminal = Terminal.Create();
-                                    Terminals = Terminals.Concat(new[] { ActiveTerminal }).ToArray();
-                                    activeTerminalIndex = Terminals.Length - 1;
+                                    var terminalList = Terminals.ToList();
+                                    terminalList.Insert(++activeTerminalIndex, ActiveTerminal);
+                                    Terminals = terminalList.ToArray();
                                     // Force resize
                                     previousHash = new byte[sha1.HashSize / 8]; // TODO find a better way
-                                    wasLastKeyCtrlS = false;
                                     break;
                                 //case 'h': // TODO horizontal split
                                 default:
-                                    wasLastKeyCtrlS = false;
                                     break;
                             }
 
