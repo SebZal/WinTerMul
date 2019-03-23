@@ -27,8 +27,7 @@ namespace WinTerMul
 
             terminal.Process = new Process
             {
-                // TODO change path
-                StartInfo = new ProcessStartInfo(@"C:\Users\zalewski\source\repos\WinTerMul\WinTerMul.Terminal\bin\Debug\net461\WinTerMul.Terminal.exe")
+                StartInfo = new ProcessStartInfo("WinTerMul.Terminal.exe")
                 {
                     Arguments = $"{terminal.Out.Id} {terminal.In.Id} {Process.GetCurrentProcess().Id}"
                 }
