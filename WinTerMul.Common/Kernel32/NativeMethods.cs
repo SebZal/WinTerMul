@@ -66,5 +66,16 @@ namespace WinTerMul.Common.Kernel32
             out InputRecord lpBuffer,
             int nLength,
             out int lpNumberOfEventsRead);
+
+        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr GetStdHandle(StdHandle nStdHandle);
+
+        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FreeConsole();
+
+        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AttachConsole(int dwProcessId);
     }
 }

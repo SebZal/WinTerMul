@@ -31,12 +31,12 @@ namespace WinTerMul.Terminal
 
                 Thread.Sleep(500); // TODO
 
-                PInvoke.Kernel32.FreeConsole();
-                PInvoke.Kernel32.AttachConsole(process.Id);
-
                 var kernel32Api = new Kernel32Api();
-                var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
-                var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
+
+                kernel32Api.FreeConsole();
+                kernel32Api.AttachConsole(process.Id);
+
+                // TODO restore handles
 
                 while (!process.HasExited) // TODO use event based system instead of polling
                 {
@@ -135,6 +135,8 @@ namespace WinTerMul.Terminal
                     rect.Bottom = (short)(bufferInfo.MaximumWindowSize.Y - 1);
                 }
 
+                // TODO How to handle resize for child processes?
+                // TODO E.g. start vifm, resize, close vifm. This results in wrong buffer size for console.
                 kernel32Api.SetConsoleWindowInfo(true, rect);
             }
         }

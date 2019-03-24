@@ -8,13 +8,10 @@ namespace WinTerMul
     {
         private static void Main(string[] args)
         {
-            var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
-            var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
-
             // TODO Use IoC container and make the container dispose these classes
             var kernel32Api = new Kernel32Api();
             var terminalContainer = new TerminalContainer(Terminal.Create());
-            var resizeHandler = new ResizeHandler(terminalContainer, outputHandle);
+            var resizeHandler = new ResizeHandler(terminalContainer, kernel32Api);
             var inputHandler = new InputHandler(terminalContainer, kernel32Api);
 
             new Renderer(terminalContainer, kernel32Api).StartRendererThread();

@@ -4,13 +4,13 @@ namespace WinTerMul.Common.Kernel32
 {
     public class Kernel32Api : IKernel32Api // TODO make internal when IoC container is added
     {
-        private readonly IntPtr _outputHandle;
-        private readonly IntPtr _inputHandle;
+        private IntPtr _outputHandle;
+        private IntPtr _inputHandle;
 
         public Kernel32Api()
         {
-            _inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
-            _outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
+            _inputHandle = NativeMethods.GetStdHandle(StdHandle.StdInputHandle);
+            _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
         }
 
         public CharInfo[] ReadConsoleOutput(Coord bufferSize, Coord bufferCoord, SmallRect readRegion)
@@ -110,6 +110,29 @@ namespace WinTerMul.Common.Kernel32
             {
                 // TODO handle error
                 // TODO throw exception and handle every place this is used
+            }
+        }
+
+        public void FreeConsole()
+        {
+            if (!NativeMethods.FreeConsole())
+            {
+                // TODO handle error
+                // TODO throw exception and handle every place this is used
+            }
+        }
+
+        public void AttachConsole(int processId)
+        {
+            if (!NativeMethods.AttachConsole(processId))
+            {
+                // TODO handle error
+                // TODO throw exception and handle every place this is used
+            }
+            else
+            {
+                _inputHandle = NativeMethods.GetStdHandle(StdHandle.StdInputHandle);
+                _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
             }
         }
     }

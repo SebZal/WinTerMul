@@ -20,8 +20,6 @@ namespace WinTerMul
 
         public void StartRendererThread()
         {
-            var handle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
-
             var renderer = new Thread(() =>
             {
                 Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();

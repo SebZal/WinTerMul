@@ -12,5 +12,7 @@
         void WriteConsoleInput(InputRecord buffer);
         void SetConsoleWindowInfo(bool absolute, SmallRect consoleWindow);
         void SetConsoleScreenBufferSize(Coord size);
+        void FreeConsole();
+        void AttachConsole(int processId);
     }
 }
