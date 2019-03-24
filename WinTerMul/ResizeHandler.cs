@@ -72,6 +72,7 @@ namespace WinTerMul
         public void Dispose()
         {
             _sha1.Dispose();
+            _terminalContainer.Dispose();
         }
     }
 }

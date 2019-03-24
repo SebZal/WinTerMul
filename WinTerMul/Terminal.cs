@@ -19,7 +19,7 @@ namespace WinTerMul
         {
             var terminal = new Terminal
             {
-                Out = Pipe.Create(), // TODO make sure to dispose pipes
+                Out = Pipe.Create(),
                 In = Pipe.Create() 
             };
 

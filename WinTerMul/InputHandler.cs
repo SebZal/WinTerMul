@@ -10,7 +10,7 @@ namespace WinTerMul
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
 
-        private bool _wasLastKeyCtrlS;
+        private bool _wasLastKeyCtrlK;
 
         public InputHandler(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
@@ -23,17 +23,17 @@ namespace WinTerMul
             var inputRecord = _kernel32Api.ReadConsoleInput();
             if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
             {
-                if (_wasLastKeyCtrlS)
+                if (_wasLastKeyCtrlK)
                 {
-                    _wasLastKeyCtrlS = false;
+                    _wasLastKeyCtrlK = false;
 
                     switch (inputRecord.Event.KeyEvent.Char.UnicodeChar)
                     {
-                        case 's':
-                        case '':
+                        case 'k':
+                        case '\v':
                         case '\0':
                         case '\u000f':
-                            _wasLastKeyCtrlS = true;
+                            _wasLastKeyCtrlK = true;
                             break;
                         case 'l':
                             _terminalContainer.SetNextTerminalActive();
@@ -52,10 +52,9 @@ namespace WinTerMul
                     return;
                 }
 
-                // TODO change to something different than CTRL+s
-                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == '') // CTRL + s
+                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == '\v') // CTRL + k
                 {
-                    _wasLastKeyCtrlS = true;
+                    _wasLastKeyCtrlK = true;
                     return;
                 }
 
