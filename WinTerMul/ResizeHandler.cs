@@ -26,7 +26,7 @@ namespace WinTerMul
             _previousHash = new byte[_sha1.HashSize / 8];
         }
 
-        public void CheckAndHandleResize()
+        public void HandleResize()
         {
             var terminals = _terminalContainer.GetTerminals();
 
