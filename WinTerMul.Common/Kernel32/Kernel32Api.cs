@@ -2,7 +2,7 @@
 
 namespace WinTerMul.Common.Kernel32
 {
-    public class Kernel32Api : IKernel32Api // TODO make internal when IoC container is added
+    internal class Kernel32Api : IKernel32Api
     {
         private IntPtr _outputHandle;
         private IntPtr _inputHandle;

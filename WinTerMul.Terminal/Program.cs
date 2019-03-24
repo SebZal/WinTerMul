@@ -4,6 +4,8 @@ using System.Linq;
 using System.Management;
 using System.Threading;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
 
@@ -17,6 +19,9 @@ namespace WinTerMul.Terminal
             var inputPipeId = args[1];
             var parentProcessId = int.Parse(args[2]);
 
+            var services = new ServiceCollection();
+            new Startup().ConfigureServices(services);
+            using (var serviceProvider = services.BuildServiceProvider())
             using (var outputPipe = Pipe.Connect(outputPipeId))
             using (var inputPipe = Pipe.Connect(inputPipeId))
             {
@@ -31,7 +36,7 @@ namespace WinTerMul.Terminal
 
                 Thread.Sleep(500); // TODO
 
-                var kernel32Api = new Kernel32Api();
+                var kernel32Api = serviceProvider.GetService<IKernel32Api>();
 
                 kernel32Api.FreeConsole();
                 kernel32Api.AttachConsole(process.Id);

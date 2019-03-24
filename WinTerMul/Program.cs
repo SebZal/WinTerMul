@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-using WinTerMul.Common.Kernel32;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WinTerMul
 {
@@ -8,26 +8,29 @@ namespace WinTerMul
     {
         private static void Main(string[] args)
         {
-            // TODO Use IoC container and make the container dispose these classes
-            var kernel32Api = new Kernel32Api();
-            var terminalContainer = new TerminalContainer(Terminal.Create());
-            var resizeHandler = new ResizeHandler(terminalContainer, kernel32Api);
-            var inputHandler = new InputHandler(terminalContainer, kernel32Api);
-
-            new Renderer(terminalContainer, kernel32Api).StartRendererThread();
-
-            while (true)
+            var services = new ServiceCollection();
+            new Startup().ConfigureServices(services);
+            using (var serviceProvider = services.BuildServiceProvider())
             {
-                Thread.Sleep(10);
+                serviceProvider.GetService<Renderer>().StartRendererThread();
 
-                var terminals = terminalContainer.GetTerminals();
-                if (terminals.Count == 0)
+                var terminalContainer = serviceProvider.GetService<TerminalContainer>();
+                var resizeHandler = serviceProvider.GetService<ResizeHandler>();
+                var inputHandler = serviceProvider.GetService<InputHandler>();
+
+                while (true)
                 {
-                    break;
-                }
+                    Thread.Sleep(10);
 
-                resizeHandler.HandleResize();
-                inputHandler.HandleInput();
+                    var terminals = terminalContainer.GetTerminals();
+                    if (terminals.Count == 0)
+                    {
+                        break;
+                    }
+
+                    resizeHandler.HandleResize();
+                    inputHandler.HandleInput();
+                }
             }
         }
     }
