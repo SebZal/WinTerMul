@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 
-using PInvoke;
-
 using WinTerMul.Common;
-
-using static WinTerMul.Common.NativeMethods;
+using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
@@ -15,8 +12,8 @@ namespace WinTerMul
         public Pipe Out { get; private set; }
         public Pipe In { get; private set; }
 
-        public COORD CursorPosition { get; set; }
-        public CONSOLE_CURSOR_INFO CursorInfo { get; set; }
+        public Coord CursorPosition { get; set; }
+        public ConsoleCursorInfo CursorInfo { get; set; }
 
         public static Terminal Create()
         {

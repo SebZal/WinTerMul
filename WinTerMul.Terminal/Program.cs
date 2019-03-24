@@ -4,9 +4,8 @@ using System.Linq;
 using System.Management;
 using System.Threading;
 
-using Newtonsoft.Json;
-
 using WinTerMul.Common;
+using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Terminal
 {
@@ -21,7 +20,6 @@ namespace WinTerMul.Terminal
             using (var outputPipe = Pipe.Connect(outputPipeId))
             using (var inputPipe = Pipe.Connect(inputPipeId))
             {
-
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo("cmd.exe")
@@ -36,14 +34,15 @@ namespace WinTerMul.Terminal
                 PInvoke.Kernel32.FreeConsole();
                 PInvoke.Kernel32.AttachConsole(process.Id);
 
+                var kernel32Api = new Kernel32Api();
                 var outputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_OUTPUT_HANDLE);
                 var inputHandle = PInvoke.Kernel32.GetStdHandle(PInvoke.Kernel32.StdHandle.STD_INPUT_HANDLE);
 
                 while (!process.HasExited) // TODO use event based system instead of polling
                 {
                     Thread.Sleep(10);
-                    HandleOutput(outputHandle, outputPipe);
-                    HandleInput(inputHandle, outputHandle, inputPipe, out var kill);
+                    HandleOutput(kernel32Api, outputPipe);
+                    HandleInput(kernel32Api, inputPipe, out var kill);
 
                     if (kill || IsProcessDead(parentProcessId))
                     {
@@ -54,45 +53,30 @@ namespace WinTerMul.Terminal
             }
         }
 
-        private static void HandleOutput(IntPtr handle, Pipe outputPipe)
+        private static void HandleOutput(IKernel32Api kernel32Api, Pipe outputPipe)
         {
-            if (!PInvoke.Kernel32.GetConsoleScreenBufferInfo(handle, out var bufferInfo))
-            {
-                // TODO error handling
-                throw new Exception();
-            }
+            var bufferInfo = kernel32Api.GetConsoleScreenBufferInfo();
 
-            var width = bufferInfo.dwSize.X;
-            var height = bufferInfo.dwSize.Y;
             var terminalData = new TerminalData
             {
-                lpBuffer = new PInvoke.Kernel32.CHAR_INFO[width * height],
-                dwBufferSize = new PInvoke.COORD { X = width, Y = height },
-                dwBufferCoord = new PInvoke.COORD { X = 0, Y = 0 },
-                lpWriteRegion = bufferInfo.srWindow,
-                dwCursorPosition = bufferInfo.dwCursorPosition
+                lpBuffer = new CharInfo[bufferInfo.Size.X * bufferInfo.Size.Y],
+                dwBufferSize = bufferInfo.Size,
+                dwBufferCoord = new Coord(),
+                lpWriteRegion = bufferInfo.Window,
+                dwCursorPosition = bufferInfo.CursorPosition
             };
 
-            var isSuccess = NativeMethods.ReadConsoleOutput(
-                handle,
-                terminalData.lpBuffer,
+            terminalData.lpBuffer = kernel32Api.ReadConsoleOutput(
                 terminalData.dwBufferSize,
                 terminalData.dwBufferCoord,
-                ref terminalData.lpWriteRegion);
+                terminalData.lpWriteRegion);
 
-            if (!isSuccess)
-            {
-                // TODO error handling
-                throw new Exception();
-            }
-
-            NativeMethods.GetConsoleCursorInfo(handle, out var cursorInfo);
-            terminalData.CursorInfo = cursorInfo;
+            terminalData.CursorInfo = kernel32Api.GetConsoleCursorInfo();
 
             outputPipe.Write(terminalData, true);
         }
 
-        private static void HandleInput(IntPtr inputHandle, IntPtr outputHandle, Pipe inputPipe, out bool kill)
+        private static void HandleInput(IKernel32Api kernel32Api, Pipe inputPipe, out bool kill)
         {
             kill = false;
 
@@ -103,8 +87,8 @@ namespace WinTerMul.Terminal
             }
             else if (data.DataType == DataType.Input)
             {
-                var lpBuffer = new[] { ((TransferableInputRecord)data).InputRecord };
-                NativeMethods.WriteConsoleInput(inputHandle, lpBuffer, lpBuffer.Length, out _);
+                var buffer = ((TransferableInputRecord)data).InputRecord;
+                kernel32Api.WriteConsoleInput(buffer);
             }
             else if (data.DataType == DataType.CloseCommand)
             {
@@ -118,62 +102,40 @@ namespace WinTerMul.Terminal
                 // Resize crashes if window size exceeds buffer size.
                 // Hence, temporary set window size to smallest possible,
                 // update buffer size, and then set the final window size.
-                var rect = new PInvoke.SMALL_RECT
+                var rect = new SmallRect
                 {
                     Top = 0,
                     Bottom = 1,
                     Left = 0,
                     Right = 1
                 };
-                if (NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect))
+                kernel32Api.SetConsoleWindowInfo(true, rect);
+                var coord = new Coord
                 {
-                    var coord = new PInvoke.COORD
-                    {
-                        X = resizeCommand.Width,
-                        Y = resizeCommand.Height
-                    };
-                    if (NativeMethods.SetConsoleScreenBufferSize(outputHandle, coord))
-                    {
-                        rect = new PInvoke.SMALL_RECT
-                        {
-                            Left = 0,
-                            Right = (short)(resizeCommand.Width - 1),
-                            Top = 0,
-                            Bottom = (short)(resizeCommand.Height - 1)
-                        };
+                    X = resizeCommand.Width,
+                    Y = resizeCommand.Height
+                };
 
-                        PInvoke.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out var bufferInfo);
-                        if (rect.Right >= bufferInfo.dwMaximumWindowSize.X)
-                        {
-                            rect.Right = (short)(bufferInfo.dwMaximumWindowSize.X - 1);
-                        }
-                        if (rect.Bottom >= bufferInfo.dwMaximumWindowSize.Y)
-                        {
-                            rect.Bottom = (short)(bufferInfo.dwMaximumWindowSize.Y - 1);
-                        }
-
-                        if (!NativeMethods.SetConsoleWindowInfo(outputHandle, true, ref rect))
-                        {
-                            // TODO
-                            var error = PInvoke.Kernel32.GetLastError();
-                            Console.WriteLine("3: " + error.ToString());
-                            Console.WriteLine(JsonConvert.SerializeObject(rect, Formatting.Indented));
-                            Console.WriteLine(JsonConvert.SerializeObject(bufferInfo, Formatting.Indented));
-                        }
-                    }
-                    else
-                    {
-                        // TODO
-                        var error = PInvoke.Kernel32.GetLastError();
-                        Console.WriteLine("2: " + error.ToString());
-                    }
-                }
-                else
+                kernel32Api.SetConsoleScreenBufferSize(coord);
+                rect = new SmallRect
                 {
-                    // TODO
-                    var error = PInvoke.Kernel32.GetLastError();
-                    Console.WriteLine("1: " + error.ToString());
+                    Left = 0,
+                    Right = (short)(resizeCommand.Width - 1),
+                    Top = 0,
+                    Bottom = (short)(resizeCommand.Height - 1)
+                };
+
+                var bufferInfo = kernel32Api.GetConsoleScreenBufferInfo();
+                if (rect.Right >= bufferInfo.MaximumWindowSize.X)
+                {
+                    rect.Right = (short)(bufferInfo.MaximumWindowSize.X - 1);
                 }
+                if (rect.Bottom >= bufferInfo.MaximumWindowSize.Y)
+                {
+                    rect.Bottom = (short)(bufferInfo.MaximumWindowSize.Y - 1);
+                }
+
+                kernel32Api.SetConsoleWindowInfo(true, rect);
             }
         }
 

@@ -1,32 +1,33 @@
 ﻿using System;
 
 using WinTerMul.Common;
+using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
     internal class InputHandler : IDisposable
     {
         private readonly TerminalContainer _terminalContainer;
-        private readonly IntPtr _inputHandle;
+        private readonly IKernel32Api _kernel32Api;
 
         private bool _wasLastKeyCtrlS;
 
-        public InputHandler(TerminalContainer terminalContainer, IntPtr inputHandle)
+        public InputHandler(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
-            _inputHandle = inputHandle;
+            _kernel32Api = kernel32Api;
         }
 
         public void HandleInput()
         {
-            PInvoke.Kernel32.ReadConsoleInput(_inputHandle, out var lpBuffer, 1, out var n);
-            if (lpBuffer.EventType == PInvoke.Kernel32.InputEventTypeFlag.KEY_EVENT)
+            var inputRecord = _kernel32Api.ReadConsoleInput();
+            if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
             {
-                if (_wasLastKeyCtrlS && lpBuffer.Event.KeyEvent.uChar.UnicodeChar != '')
+                if (_wasLastKeyCtrlS)
                 {
                     _wasLastKeyCtrlS = false;
 
-                    switch (lpBuffer.Event.KeyEvent.uChar.UnicodeChar)
+                    switch (inputRecord.Event.KeyEvent.Char.UnicodeChar)
                     {
                         case 's':
                         case '':
@@ -51,7 +52,8 @@ namespace WinTerMul
                     return;
                 }
 
-                if (lpBuffer.Event.KeyEvent.uChar.UnicodeChar == '') // CTRL + s
+                // TODO change to something different than CTRL+s
+                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == '') // CTRL + s
                 {
                     _wasLastKeyCtrlS = true;
                     return;
@@ -59,7 +61,7 @@ namespace WinTerMul
 
                 try
                 {
-                    _terminalContainer.ActiveTerminal?.In.Write(new TransferableInputRecord { InputRecord = lpBuffer });
+                    _terminalContainer.ActiveTerminal?.In.Write(new TransferableInputRecord { InputRecord = inputRecord });
                 }
                 catch (ObjectDisposedException)
                 {

@@ -1,9 +1,11 @@
-﻿namespace WinTerMul.Common
+﻿using WinTerMul.Common.Kernel32;
+
+namespace WinTerMul.Common
 {
     public class TransferableInputRecord : ITransferable
     {
         public DataType DataType => DataType.Input;
 
-        public PInvoke.Kernel32.INPUT_RECORD InputRecord { get; set; }
+        public InputRecord InputRecord { get; set; }
     }
 }

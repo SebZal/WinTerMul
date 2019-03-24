@@ -1,7 +1,4 @@
-﻿using PInvoke;
-
-using static PInvoke.Kernel32;
-using static WinTerMul.Common.NativeMethods;
+﻿using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Common
 {
@@ -9,12 +6,13 @@ namespace WinTerMul.Common
     {
         public DataType DataType => DataType.Output;
 
-        public CHAR_INFO[] lpBuffer;
-        public COORD dwBufferSize;
-        public COORD dwBufferCoord;
-        public SMALL_RECT lpWriteRegion;
-        public COORD dwCursorPosition;
+        // TODO rename fields, make properties
+        public CharInfo[] lpBuffer;
+        public Coord dwBufferSize;
+        public Coord dwBufferCoord;
+        public SmallRect lpWriteRegion;
+        public Coord dwCursorPosition;
 
-        public CONSOLE_CURSOR_INFO CursorInfo;
+        public ConsoleCursorInfo CursorInfo;
     }
 }

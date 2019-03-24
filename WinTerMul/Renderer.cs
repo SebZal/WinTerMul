@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Threading;
 
 using WinTerMul.Common;
+using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
     internal class Renderer
     {
         private readonly TerminalContainer _terminalContainer;
+        private readonly IKernel32Api _kernel32Api;
 
-        public Renderer(TerminalContainer terminalContainer)
+        public Renderer(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
+            _kernel32Api = kernel32Api;
         }
 
         public void StartRendererThread()
@@ -48,12 +51,11 @@ namespace WinTerMul
                             terminalData.lpWriteRegion.Right += offset;
                             terminalData.dwCursorPosition.X += offset;
 
-                            NativeMethods.WriteConsoleOutput(
-                                handle,
+                            _kernel32Api.WriteConsoleOutput(
                                 terminalData.lpBuffer,
                                 terminalData.dwBufferSize,
                                 terminalData.dwBufferCoord,
-                                ref terminalData.lpWriteRegion);
+                                terminalData.lpWriteRegion);
 
                             terminal.CursorInfo = terminalData.CursorInfo;
                             terminal.CursorPosition = terminalData.dwCursorPosition;
@@ -73,14 +75,13 @@ namespace WinTerMul
                     var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
                     if (cursorPosition.HasValue)
                     {
-                        PInvoke.Kernel32.SetConsoleCursorPosition(handle, cursorPosition.Value);
+                        _kernel32Api.SetConsoleCursorPosition(cursorPosition.Value);
                     }
 
                     var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
                     if (cursorInfo.HasValue)
                     {
-                        var ci = cursorInfo.Value;
-                        NativeMethods.SetConsoleCursorInfo(handle, ref ci);
+                        _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
                     }
                 }
             })

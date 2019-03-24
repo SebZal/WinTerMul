@@ -15,4 +15,5 @@ A terminal multiplexer for Windows.
 - [x] Display caret (only in active pane), handle insert mode as well. Don't display caret in vifm.
 - [x] Move caret to active pane after pane switch.
 - [ ] Reduce CPU usage.
+- [ ] Add XML documentation.
 - [ ] Cleanup all TODOs in source code.
