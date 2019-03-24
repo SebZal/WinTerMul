@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace WinTerMul.Common.Kernel32
 {
@@ -124,16 +125,19 @@ namespace WinTerMul.Common.Kernel32
 
         public void AttachConsole(int processId)
         {
-            if (!NativeMethods.AttachConsole(processId))
+            var timesFailed = 0;
+            while (!NativeMethods.AttachConsole(processId))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                if (++timesFailed > 10)
+                {
+                    // TODO handle error
+                    // TODO throw exception and handle every place this is used
+                }
+                Thread.Sleep(10);
             }
-            else
-            {
-                _inputHandle = NativeMethods.GetStdHandle(StdHandle.StdInputHandle);
-                _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
-            }
+
+            _inputHandle = NativeMethods.GetStdHandle(StdHandle.StdInputHandle);
+            _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
         }
     }
 }

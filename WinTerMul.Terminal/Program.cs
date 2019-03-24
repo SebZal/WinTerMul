@@ -34,14 +34,10 @@ namespace WinTerMul.Terminal
                 };
                 process.Start();
 
-                Thread.Sleep(500); // TODO
-
                 var kernel32Api = serviceProvider.GetService<IKernel32Api>();
 
                 kernel32Api.FreeConsole();
                 kernel32Api.AttachConsole(process.Id);
-
-                // TODO restore handles
 
                 while (!process.HasExited) // TODO use event based system instead of polling
                 {
