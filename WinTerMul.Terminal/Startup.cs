@@ -23,7 +23,7 @@ namespace WinTerMul.Terminal
 
             services.AddSingleton(new Dictionary<PipeType, Pipe>
             {
-                [PipeType.Output] = Pipe.Connect(_outputPipeId),
+                [PipeType.Output] = Pipe.Connect(_outputPipeId), // TODO handle dispose
                 [PipeType.Input] = Pipe.Connect(_inputPipeId)
             });
             services.AddSingleton<PipeStore>(x => type => x.GetRequiredService<Dictionary<PipeType, Pipe>>()[type]);
