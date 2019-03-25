@@ -20,11 +20,13 @@ namespace WinTerMul.Terminal
             var parentProcessId = int.Parse(args[2]);
 
             var services = new ServiceCollection();
-            new Startup().ConfigureServices(services);
+            new Startup(outputPipeId, inputPipeId).ConfigureServices(services);
             using (var serviceProvider = services.BuildServiceProvider())
             using (var outputPipe = Pipe.Connect(outputPipeId))
             using (var inputPipe = Pipe.Connect(inputPipeId))
             {
+                var outputHandler = serviceProvider.GetService<OutputHandler>();
+
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo("cmd.exe")
@@ -42,7 +44,7 @@ namespace WinTerMul.Terminal
                 while (!process.HasExited) // TODO use event based system instead of polling
                 {
                     Thread.Sleep(10);
-                    HandleOutput(kernel32Api, outputPipe);
+                    outputHandler.HandleOutput();
                     HandleInput(kernel32Api, inputPipe, out var kill);
 
                     if (kill || IsProcessDead(parentProcessId))
@@ -52,29 +54,6 @@ namespace WinTerMul.Terminal
                     }
                 }
             }
-        }
-
-        private static void HandleOutput(IKernel32Api kernel32Api, Pipe outputPipe)
-        {
-            var bufferInfo = kernel32Api.GetConsoleScreenBufferInfo();
-
-            var terminalData = new TerminalData
-            {
-                lpBuffer = new CharInfo[bufferInfo.Size.X * bufferInfo.Size.Y],
-                dwBufferSize = bufferInfo.Size,
-                dwBufferCoord = new Coord(),
-                lpWriteRegion = bufferInfo.Window,
-                dwCursorPosition = bufferInfo.CursorPosition
-            };
-
-            terminalData.lpBuffer = kernel32Api.ReadConsoleOutput(
-                terminalData.dwBufferSize,
-                terminalData.dwBufferCoord,
-                terminalData.lpWriteRegion);
-
-            terminalData.CursorInfo = kernel32Api.GetConsoleCursorInfo();
-
-            outputPipe.Write(terminalData, true);
         }
 
         private static void HandleInput(IKernel32Api kernel32Api, Pipe inputPipe, out bool kill)
