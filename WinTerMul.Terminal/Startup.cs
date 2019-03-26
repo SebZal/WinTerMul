@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,23 +9,29 @@ namespace WinTerMul.Terminal
 {
     internal class Startup
     {
-        private readonly string _outputPipeId;
-        private readonly string _inputPipeId;
+        private readonly InputArguments _inputArguments;
 
-        public Startup(string outputPipeId, string inputPipeId)
+        public Startup(InputArguments inputArguments)
         {
-            _outputPipeId = outputPipeId;
-            _inputPipeId = inputPipeId;
+            _inputArguments = inputArguments ?? throw new ArgumentNullException(nameof(inputArguments));
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddWinTerMulCommon();
 
-            services.AddSingleton(_ => Pipe.Connect(_outputPipeId));
-            services.AddSingleton(_ => Pipe.Connect(_inputPipeId));
+            services.AddSingleton(_inputArguments);
+
+            services.AddSingleton(_ => Pipe.Connect(_inputArguments.OutputPipeId));
+            services.AddSingleton(_ => Pipe.Connect(_inputArguments.InputPipeId));
             services.AddSingleton<PipeStore>(x => type => x.GetServices<Pipe>().ElementAt((int)type));
 
+            services.AddSingleton<ProcessService>();
             services.AddSingleton<OutputService>();
             services.AddSingleton<InputService>();
         }

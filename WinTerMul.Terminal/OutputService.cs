@@ -12,8 +12,8 @@ namespace WinTerMul.Terminal
 
         public OutputService(IKernel32Api kernel32Api, PipeStore pipeStore)
         {
-            _kernel32Api = kernel32Api;
-            _outputPipe = pipeStore(PipeType.Output);
+            _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
+            _outputPipe = pipeStore(PipeType.Output) ?? throw new ArgumentNullException(nameof(pipeStore));
         }
 
         public void HandleOutput()

@@ -1,4 +1,6 @@
-﻿using WinTerMul.Common;
+﻿using System;
+
+using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Terminal
@@ -7,17 +9,20 @@ namespace WinTerMul.Terminal
     {
         private readonly Pipe _inputPipe;
         private readonly IKernel32Api _kernel32Api;
+        private readonly ProcessService _processService;
 
-        public InputService(IKernel32Api kernel32Api, PipeStore pipeStore)
+        public InputService(
+            IKernel32Api kernel32Api,
+            PipeStore pipeStore,
+            ProcessService processService)
         {
-            _kernel32Api = kernel32Api;
-            _inputPipe = pipeStore(PipeType.Input);
+            _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
+            _inputPipe = pipeStore?.Invoke(PipeType.Input) ?? throw new ArgumentNullException(nameof(pipeStore));
+            _processService = processService ?? throw new ArgumentNullException(nameof(processService));
         }
 
-        public void HandleInput(out bool kill)
+        public void HandleInput()
         {
-            kill = false;
-
             var data = _inputPipe.Read();
             if (data == null)
             {
@@ -33,7 +38,7 @@ namespace WinTerMul.Terminal
             }
             else if (data.DataType == DataType.CloseCommand)
             {
-                kill = true;
+                _processService.CloseTerminal();
             }
         }
 
