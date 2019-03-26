@@ -26,6 +26,7 @@ namespace WinTerMul.Terminal
             services.AddSingleton<PipeStore>(x => type => x.GetServices<Pipe>().ElementAt((int)type));
 
             services.AddSingleton<OutputHandler>();
+            services.AddSingleton<InputHandler>();
         }
     }
 }
