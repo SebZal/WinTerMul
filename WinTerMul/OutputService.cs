@@ -20,7 +20,7 @@ namespace WinTerMul
 
         public void StartOutputHandlingThread()
         {
-            var renderer = new Thread(() =>
+            var renderer = new Thread(async () =>
             {
                 Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();
                 while (true) // TODO use event based system instead of polling
@@ -35,7 +35,7 @@ namespace WinTerMul
                         OutputData outputData = null;
                         try
                         {
-                            outputData = (OutputData)terminal.Out.Read();
+                            outputData = (OutputData)await terminal.Out.ReadAsync();
                         }
                         catch (ObjectDisposedException)
                         {

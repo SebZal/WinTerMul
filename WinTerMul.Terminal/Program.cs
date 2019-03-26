@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,12 +21,23 @@ namespace WinTerMul.Terminal
 
                 processService.StartNewTerminal();
 
+                var outputTask = Task.CompletedTask;
+                var inputTask = Task.CompletedTask;
                 while (!processService.ShouldClose()) // TODO use event based system instead of polling
                 {
                     Thread.Sleep(10);
 
-                    outputService.HandleOutput();
-                    inputService.HandleInput();
+                    if (outputTask.IsCompleted)
+                    {
+                        outputTask = outputService.HandleOutputAsync();
+                    }
+
+                    if (inputTask.IsCompleted)
+                    {
+                        inputTask = inputService.HandleInputAsync();
+                    }
+
+                    Task.WaitAny(new[] { outputTask, inputTask });
                 }
             }
         }

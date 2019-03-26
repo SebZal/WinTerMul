@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
+using System.Threading;
 
 using WinTerMul.Common.Kernel32;
 
@@ -11,15 +12,18 @@ namespace WinTerMul.Terminal
     {
         private readonly IKernel32Api _kernel32Api;
         private readonly InputArguments _inputArguments;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
         private Process _process;
-        private bool _shouldClose;
 
         public ProcessService(IKernel32Api kernel32Api, InputArguments inputArguments)
         {
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _inputArguments = inputArguments ?? throw new ArgumentNullException(nameof(inputArguments));
+            _cancellationTokenSource = new CancellationTokenSource();
         }
+
+        public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         public void StartNewTerminal()
         {
@@ -43,7 +47,7 @@ namespace WinTerMul.Terminal
 
         public void CloseTerminal()
         {
-            _shouldClose = true;
+            _cancellationTokenSource.Cancel();
         }
 
         public bool ShouldClose()
@@ -53,7 +57,9 @@ namespace WinTerMul.Terminal
                 throw new InvalidOperationException("Terminal has been created.");
             }
 
-            if (_shouldClose || _process.HasExited || IsProcessDead(_inputArguments.ParentProcessId))
+            if (_cancellationTokenSource.IsCancellationRequested ||
+                _process.HasExited ||
+                IsProcessDead(_inputArguments.ParentProcessId))
             {
                 return true;
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -21,9 +22,9 @@ namespace WinTerMul.Terminal
             _processService = processService ?? throw new ArgumentNullException(nameof(processService));
         }
 
-        public void HandleInput()
+        public async Task HandleInputAsync()
         {
-            var data = _inputPipe.Read();
+            var data = await _inputPipe.ReadAsync(_processService.CancellationToken);
             if (data == null)
             {
                 return;

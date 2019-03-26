@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -18,7 +19,7 @@ namespace WinTerMul
             _kernel32Api = kernel32Api;
         }
 
-        public void HandleInput()
+        public async Task HandleInputAsync()
         {
             var inputRecord = _kernel32Api.ReadConsoleInput();
             if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
@@ -60,7 +61,8 @@ namespace WinTerMul
 
                 try
                 {
-                    _terminalContainer.ActiveTerminal?.In.Write(new InputData { InputRecord = inputRecord });
+                    var inputData = new InputData { InputRecord = inputRecord };
+                    await _terminalContainer.ActiveTerminal?.In.WriteAsync(inputData);
                 }
                 catch (ObjectDisposedException)
                 {

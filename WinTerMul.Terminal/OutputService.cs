@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -8,15 +9,20 @@ namespace WinTerMul.Terminal
     internal class OutputService : IDisposable
     {
         private readonly IKernel32Api _kernel32Api;
+        private readonly ProcessService _processService;
         private readonly Pipe _outputPipe;
 
-        public OutputService(IKernel32Api kernel32Api, PipeStore pipeStore)
+        public OutputService(
+            IKernel32Api kernel32Api,
+            PipeStore pipeStore,
+            ProcessService processService)
         {
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _outputPipe = pipeStore(PipeType.Output) ?? throw new ArgumentNullException(nameof(pipeStore));
+            _processService = processService ?? throw new ArgumentNullException(nameof(processService));
         }
 
-        public void HandleOutput()
+        public async Task HandleOutputAsync()
         {
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
 
@@ -36,7 +42,7 @@ namespace WinTerMul.Terminal
 
             outputData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
 
-            _outputPipe.Write(outputData, true);
+            await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
         }
 
         public void Dispose()

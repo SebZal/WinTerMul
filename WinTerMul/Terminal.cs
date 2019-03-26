@@ -38,6 +38,8 @@ namespace WinTerMul
 
         public void Dispose()
         {
+            // TODO setting to null causes null reference exceptions, fix these
+
             Out.Dispose();
             Out = null;
 

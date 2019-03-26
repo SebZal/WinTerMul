@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,8 +29,11 @@ namespace WinTerMul
                         break;
                     }
 
-                    resizeService.HandleResize();
-                    inputService.HandleInput();
+                    Task.WaitAll(new[]
+                    {
+                        resizeService.HandleResizeAsync(),
+                        inputService.HandleInputAsync()
+                    });
                 }
             }
         }

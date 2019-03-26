@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO.Pipes;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WinTerMul.Common
 {
@@ -35,9 +37,12 @@ namespace WinTerMul.Common
             return new Pipe(id, stream);
         }
 
-        public void Write(ITransferable @object, bool writeOnlyIfDataHasChanged = false)
+        public async Task WriteAsync(
+            ITransferable @object,
+            bool writeOnlyIfDataHasChanged = false,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            VerifyIsConnected();
+            await VerifyIsConnectedAsync(cancellationToken);
 
             var data = Serializer.Serialize(@object);
 
@@ -52,18 +57,19 @@ namespace WinTerMul.Common
             Array.Copy(BitConverter.GetBytes((ushort)data.Length), 0, buffer, 0, sizeof(ushort));
             Array.Copy(data, 0, buffer, sizeof(ushort), data.Length);
 
-            _stream.Write(buffer, 0, buffer.Length);
+            await _stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
         }
 
-        public ITransferable Read()
+        public async Task<ITransferable> ReadAsync(
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            VerifyIsConnected();
+            await VerifyIsConnectedAsync(cancellationToken);
 
             var dataLengthBuffer = new byte[sizeof(ushort)];
-            _stream.Read(dataLengthBuffer, 0, dataLengthBuffer.Length);
+            await _stream.ReadAsync(dataLengthBuffer, 0, dataLengthBuffer.Length, cancellationToken);
             var dataLength = BitConverter.ToUInt16(dataLengthBuffer, 0);
             var data = new byte[dataLength];
-            _stream.Read(data, 0, data.Length);
+            await _stream.ReadAsync(data, 0, data.Length, cancellationToken);
 
             return Serializer.Deserialize(data);
         }
@@ -71,6 +77,8 @@ namespace WinTerMul.Common
         public void Dispose()
         {
             _stream.Dispose();
+            _stream = null;
+
             _sha1.Dispose();
         }
 
@@ -99,11 +107,11 @@ namespace WinTerMul.Common
             }
         }
 
-        private void VerifyIsConnected()
+        private async Task VerifyIsConnectedAsync(CancellationToken cancellationToken)
         {
             if (_stream is NamedPipeServerStream s && !_stream.IsConnected)
             {
-                s.WaitForConnection();
+                await s.WaitForConnectionAsync(cancellationToken);
             }
         }
     }

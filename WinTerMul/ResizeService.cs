@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -27,7 +28,7 @@ namespace WinTerMul
             _previousHash = new byte[_sha1.HashSize / 8];
         }
 
-        public void HandleResize()
+        public async Task HandleResizeAsync()
         {
             var terminals = _terminalContainer.GetTerminals();
             if (terminals.Count == 0)
@@ -58,7 +59,7 @@ namespace WinTerMul
                 {
                     try
                     {
-                        terminal.In.Write(new ResizeCommand
+                        await terminal.In.WriteAsync(new ResizeCommand
                         {
                             Width = bufferInfo.MaximumWindowSize.X,
                             Height = bufferInfo.MaximumWindowSize.Y
