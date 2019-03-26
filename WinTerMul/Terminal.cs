@@ -39,8 +39,13 @@ namespace WinTerMul
         public void Dispose()
         {
             Out.Dispose();
+            Out = null;
+
             In.Dispose();
+            In = null;
+
             Process.Dispose();
+            Process = null;
         }
     }
 }

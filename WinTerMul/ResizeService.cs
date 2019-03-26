@@ -30,6 +30,10 @@ namespace WinTerMul
         public void HandleResize()
         {
             var terminals = _terminalContainer.GetTerminals();
+            if (terminals.Count == 0)
+            {
+                return;
+            }
 
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
             bufferInfo.CursorPosition = new Coord(); // Ignore cursor position
