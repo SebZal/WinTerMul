@@ -60,7 +60,7 @@ namespace WinTerMul
 
                 try
                 {
-                    _terminalContainer.ActiveTerminal?.In.Write(new TransferableInputRecord { InputRecord = inputRecord });
+                    _terminalContainer.ActiveTerminal?.In.Write(new InputData { InputRecord = inputRecord });
                 }
                 catch (ObjectDisposedException)
                 {

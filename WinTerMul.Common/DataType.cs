@@ -2,8 +2,8 @@
 {
     public enum DataType : byte
     {
-        Output = 1,
-        Input = 2,
+        OutputData = 1,
+        InputData = 2,
         CloseCommand = 3,
         ResizeCommand = 4
     }

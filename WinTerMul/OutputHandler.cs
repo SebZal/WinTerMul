@@ -7,18 +7,18 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
-    internal class Renderer
+    internal class OutputHandler
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
 
-        public Renderer(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
+        public OutputHandler(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
         }
 
-        public void StartRendererThread()
+        public void StartOutputHandlingThread()
         {
             var renderer = new Thread(() =>
             {
@@ -32,10 +32,10 @@ namespace WinTerMul
                     {
                         short width = 500;
 
-                        TerminalData terminalData = null;
+                        OutputData outputData = null;
                         try
                         {
-                            terminalData = (TerminalData)terminal.Out.Read();
+                            outputData = (OutputData)terminal.Out.Read();
                         }
                         catch (ObjectDisposedException)
                         {
@@ -43,23 +43,26 @@ namespace WinTerMul
                             continue;
                         }
 
-                        if (terminalData != null)
+                        if (outputData != null)
                         {
-                            terminalData.lpWriteRegion.Left += offset;
-                            terminalData.lpWriteRegion.Right += offset;
-                            terminalData.dwCursorPosition.X += offset;
+                            var writeRegion = outputData.WriteRegion;
+                            var cursorPosition = outputData.CursorPosition;
+
+                            writeRegion.Left += offset;
+                            writeRegion.Right += offset;
+                            cursorPosition.X += offset;
 
                             _kernel32Api.WriteConsoleOutput(
-                                terminalData.lpBuffer,
-                                terminalData.dwBufferSize,
-                                terminalData.dwBufferCoord,
-                                terminalData.lpWriteRegion);
+                                outputData.Buffer,
+                                outputData.BufferSize,
+                                outputData.BufferCoord,
+                                writeRegion);
 
-                            terminal.CursorInfo = terminalData.CursorInfo;
-                            terminal.CursorPosition = terminalData.dwCursorPosition;
+                            terminal.CursorInfo = outputData.CursorInfo;
+                            terminal.CursorPosition = cursorPosition;
 
 
-                            width = terminalData.dwBufferSize.X;
+                            width = outputData.BufferSize.X;
                             previousWidths[terminal] = width;
                         }
                         else
@@ -70,23 +73,28 @@ namespace WinTerMul
                         offset += width;
                     }
 
-                    var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
-                    if (cursorPosition.HasValue)
-                    {
-                        _kernel32Api.SetConsoleCursorPosition(cursorPosition.Value);
-                    }
-
-                    var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
-                    if (cursorInfo.HasValue)
-                    {
-                        _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
-                    }
+                    UpdateCursor();
                 }
             })
             {
                 IsBackground = true
             };
             renderer.Start();
+        }
+
+        private void UpdateCursor()
+        {
+            var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
+            if (cursorPosition.HasValue)
+            {
+                _kernel32Api.SetConsoleCursorPosition(cursorPosition.Value);
+            }
+
+            var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
+            if (cursorInfo.HasValue)
+            {
+                _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
+            }
         }
     }
 }

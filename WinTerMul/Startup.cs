@@ -13,7 +13,7 @@ namespace WinTerMul
             services.AddSingleton(_ => new TerminalContainer(Terminal.Create()));
             services.AddSingleton<ResizeHandler>();
             services.AddSingleton<InputHandler>();
-            services.AddSingleton<Renderer>();
+            services.AddSingleton<OutputHandler>();
         }
     }
 }

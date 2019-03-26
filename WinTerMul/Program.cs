@@ -12,7 +12,7 @@ namespace WinTerMul
             new Startup().ConfigureServices(services);
             using (var serviceProvider = services.BuildServiceProvider())
             {
-                serviceProvider.GetService<Renderer>().StartRendererThread();
+                serviceProvider.GetService<OutputHandler>().StartOutputHandlingThread();
 
                 var terminalContainer = serviceProvider.GetService<TerminalContainer>();
                 var resizeHandler = serviceProvider.GetService<ResizeHandler>();

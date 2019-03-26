@@ -20,23 +20,23 @@ namespace WinTerMul.Terminal
         {
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
 
-            var terminalData = new TerminalData
+            var outputData = new OutputData
             {
-                lpBuffer = new CharInfo[bufferInfo.Size.X * bufferInfo.Size.Y],
-                dwBufferSize = bufferInfo.Size,
-                dwBufferCoord = new Coord(),
-                lpWriteRegion = bufferInfo.Window,
-                dwCursorPosition = bufferInfo.CursorPosition
+                Buffer = new CharInfo[bufferInfo.Size.X * bufferInfo.Size.Y],
+                BufferSize = bufferInfo.Size,
+                BufferCoord = new Coord(),
+                WriteRegion = bufferInfo.Window,
+                CursorPosition = bufferInfo.CursorPosition
             };
 
-            terminalData.lpBuffer = _kernel32Api.ReadConsoleOutput(
-                terminalData.dwBufferSize,
-                terminalData.dwBufferCoord,
-                terminalData.lpWriteRegion);
+            outputData.Buffer = _kernel32Api.ReadConsoleOutput(
+                outputData.BufferSize,
+                outputData.BufferCoord,
+                outputData.WriteRegion);
 
-            terminalData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
+            outputData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
 
-            _outputPipe.Write(terminalData, true);
+            _outputPipe.Write(outputData, true);
         }
 
         public void Dispose()

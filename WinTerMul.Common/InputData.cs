@@ -2,9 +2,9 @@
 
 namespace WinTerMul.Common
 {
-    public class TransferableInputRecord : ITransferable
+    public class InputData : ITransferable
     {
-        public DataType DataType => DataType.Input;
+        public DataType DataType => DataType.InputData;
 
         public InputRecord InputRecord { get; set; }
     }

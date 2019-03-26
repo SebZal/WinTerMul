@@ -23,9 +23,9 @@ namespace WinTerMul.Terminal
             {
                 return;
             }
-            else if (data.DataType == DataType.Input)
+            else if (data.DataType == DataType.InputData)
             {
-                _kernel32Api.WriteConsoleInput(((TransferableInputRecord)data).InputRecord);
+                _kernel32Api.WriteConsoleInput(((InputData)data).InputRecord);
             }
             else if (data.DataType == DataType.ResizeCommand)
             {
