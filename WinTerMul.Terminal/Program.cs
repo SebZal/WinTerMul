@@ -22,9 +22,8 @@ namespace WinTerMul.Terminal
             var services = new ServiceCollection();
             new Startup(outputPipeId, inputPipeId).ConfigureServices(services);
             using (var serviceProvider = services.BuildServiceProvider())
-            using (var outputPipe = serviceProvider.GetService<PipeStore>()(PipeType.Output))
-            using (var inputPipe = serviceProvider.GetService<PipeStore>()(PipeType.Input))
             {
+                var inputPipe = serviceProvider.GetService<PipeStore>()(PipeType.Input);
                 var outputHandler = serviceProvider.GetService<OutputHandler>();
 
                 var process = new Process

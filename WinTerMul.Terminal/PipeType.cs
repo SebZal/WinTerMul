@@ -2,7 +2,7 @@
 {
     internal enum PipeType
     {
-        Output,
-        Input
+        Output = 0,
+        Input = 1
     }
 }

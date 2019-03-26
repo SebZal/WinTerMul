@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,12 +21,9 @@ namespace WinTerMul.Terminal
         {
             services.AddWinTerMulCommon();
 
-            services.AddSingleton(new Dictionary<PipeType, Pipe>
-            {
-                [PipeType.Output] = Pipe.Connect(_outputPipeId), // TODO handle dispose
-                [PipeType.Input] = Pipe.Connect(_inputPipeId)
-            });
-            services.AddSingleton<PipeStore>(x => type => x.GetRequiredService<Dictionary<PipeType, Pipe>>()[type]);
+            services.AddSingleton(_ => Pipe.Connect(_outputPipeId));
+            services.AddSingleton(_ => Pipe.Connect(_inputPipeId));
+            services.AddSingleton<PipeStore>(x => type => x.GetServices<Pipe>().ElementAt((int)type));
 
             services.AddSingleton<OutputHandler>();
         }
