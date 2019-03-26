@@ -8,13 +8,31 @@ namespace WinTerMul
         private readonly object _lock;
         private readonly List<Terminal> _terminals;
 
+        private Terminal _activeTerminal;
+
         public TerminalContainer(params Terminal[] terminals)
         {
             _lock = new object();
             _terminals = new List<Terminal>(terminals);
         }
 
-        public Terminal ActiveTerminal { get; private set; }
+        public Terminal ActiveTerminal
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _activeTerminal;
+                }
+            }
+            private set
+            {
+                lock (_lock)
+                {
+                    _activeTerminal = value;
+                }
+            }
+        }
 
         public void SetNextTerminalActive()
         {

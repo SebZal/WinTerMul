@@ -59,6 +59,8 @@ namespace WinTerMul
                 {
                     try
                     {
+                        terminal.Width = bufferInfo.MaximumWindowSize.X;
+
                         await terminal.In.WriteAsync(new ResizeCommand
                         {
                             Width = bufferInfo.MaximumWindowSize.X,

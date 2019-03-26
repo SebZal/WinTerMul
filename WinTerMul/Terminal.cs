@@ -15,6 +15,8 @@ namespace WinTerMul
         public Coord CursorPosition { get; set; }
         public ConsoleCursorInfo CursorInfo { get; set; }
 
+        public short Width { get; set; } = 500;
+
         public static Terminal Create()
         {
             var terminal = new Terminal

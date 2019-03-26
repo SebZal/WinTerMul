@@ -13,11 +13,14 @@ namespace WinTerMul
             new Startup().ConfigureServices(services);
             using (var serviceProvider = services.BuildServiceProvider())
             {
-                serviceProvider.GetService<OutputService>().StartOutputHandlingThread();
-
                 var terminalContainer = serviceProvider.GetService<TerminalContainer>();
                 var resizeService = serviceProvider.GetService<ResizeService>();
                 var inputService = serviceProvider.GetService<InputService>();
+                var outputService = serviceProvider.GetService<OutputService>();
+
+                var inputTask = Task.CompletedTask;
+                var resizeTask = Task.CompletedTask;
+                var outputTask = Task.CompletedTask;
 
                 while (true)
                 {
@@ -29,11 +32,22 @@ namespace WinTerMul
                         break;
                     }
 
-                    Task.WaitAll(new[]
+                    if (inputTask.IsCompleted)
                     {
-                        resizeService.HandleResizeAsync(),
-                        inputService.HandleInputAsync()
-                    });
+                        inputTask = inputService.HandleInputAsync();
+                    }
+
+                    if (resizeTask.IsCompleted)
+                    {
+                        resizeTask = resizeService.HandleResizeAsync();
+                    }
+
+                    if (outputTask.IsCompleted)
+                    {
+                        outputTask = outputService.HandleOutputAsync();
+                    }
+
+                    Task.WaitAny(inputTask, resizeTask, outputTask);
                 }
             }
         }

@@ -37,7 +37,7 @@ namespace WinTerMul.Terminal
                         inputTask = inputService.HandleInputAsync();
                     }
 
-                    Task.WaitAny(new[] { outputTask, inputTask });
+                    Task.WaitAny(outputTask, inputTask);
                 }
             }
         }

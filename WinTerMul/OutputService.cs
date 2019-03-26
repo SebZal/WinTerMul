@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -18,68 +17,43 @@ namespace WinTerMul
             _kernel32Api = kernel32Api;
         }
 
-        public void StartOutputHandlingThread()
+        public async Task HandleOutputAsync()
         {
-            var renderer = new Thread(async () =>
+            var tasks = new List<Task>();
+            short offset = 0;
+
+            foreach (var terminal in _terminalContainer.GetTerminals())
             {
-                Dictionary<Terminal, short> previousWidths = new Dictionary<Terminal, short>();
-                while (true) // TODO use event based system instead of polling
+                tasks.Add(terminal.Out.ReadAsync().ContinueWith((transferableTask, state) =>
                 {
-                    Thread.Sleep(10);
+                    var localOffset = (short)((object[])state)[0];
+                    var localTerminal = (Terminal)((object[])state)[1];
 
-                    short offset = 0;
-                    foreach (var terminal in _terminalContainer.GetTerminals())
+                    var outputData = (OutputData)transferableTask.Result;
+                    if (outputData != null)
                     {
-                        short width = 500;
+                        var writeRegion = outputData.WriteRegion;
+                        var cursorPosition = outputData.CursorPosition;
 
-                        OutputData outputData = null;
-                        try
-                        {
-                            outputData = (OutputData)await terminal.Out.ReadAsync();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                            // Process has exited, will be cleaned up by terminal container.
-                            continue;
-                        }
+                        writeRegion.Left += localOffset;
+                        writeRegion.Right += localOffset;
+                        cursorPosition.X += localOffset;
 
-                        if (outputData != null)
-                        {
-                            var writeRegion = outputData.WriteRegion;
-                            var cursorPosition = outputData.CursorPosition;
+                        _kernel32Api.WriteConsoleOutput(
+                            outputData.Buffer,
+                            outputData.BufferSize,
+                            outputData.BufferCoord,
+                            writeRegion);
 
-                            writeRegion.Left += offset;
-                            writeRegion.Right += offset;
-                            cursorPosition.X += offset;
-
-                            _kernel32Api.WriteConsoleOutput(
-                                outputData.Buffer,
-                                outputData.BufferSize,
-                                outputData.BufferCoord,
-                                writeRegion);
-
-                            terminal.CursorInfo = outputData.CursorInfo;
-                            terminal.CursorPosition = cursorPosition;
-
-
-                            width = outputData.BufferSize.X;
-                            previousWidths[terminal] = width;
-                        }
-                        else
-                        {
-                            previousWidths.TryGetValue(terminal, out width);
-                        }
-
-                        offset += width;
+                        localTerminal.CursorInfo = outputData.CursorInfo;
+                        localTerminal.CursorPosition = cursorPosition;
                     }
+                }, new object[] { offset, terminal }));
 
-                    UpdateCursor();
-                }
-            })
-            {
-                IsBackground = true
-            };
-            renderer.Start();
+                offset += terminal.Width;
+            }
+
+            await Task.WhenAll(tasks).ContinueWith(_ => UpdateCursor());
         }
 
         private void UpdateCursor()
