@@ -5,7 +5,7 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Terminal
 {
-    internal class InputService
+    internal class InputService : IDisposable
     {
         private readonly Pipe _inputPipe;
         private readonly IKernel32Api _kernel32Api;
@@ -40,6 +40,12 @@ namespace WinTerMul.Terminal
             {
                 _processService.CloseTerminal();
             }
+        }
+
+        public void Dispose()
+        {
+            _inputPipe.Dispose();
+            _processService.Dispose();
         }
 
         private void HandleResize(ResizeCommand resizeCommand)
