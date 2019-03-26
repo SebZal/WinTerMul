@@ -5,12 +5,12 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Terminal
 {
-    internal class OutputHandler : IDisposable
+    internal class OutputService : IDisposable
     {
         private readonly IKernel32Api _kernel32Api;
         private readonly Pipe _outputPipe;
 
-        public OutputHandler(IKernel32Api kernel32Api, PipeStore pipeStore)
+        public OutputService(IKernel32Api kernel32Api, PipeStore pipeStore)
         {
             _kernel32Api = kernel32Api;
             _outputPipe = pipeStore(PipeType.Output);

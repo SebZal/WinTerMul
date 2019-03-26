@@ -11,9 +11,9 @@ namespace WinTerMul
             services.AddWinTerMulCommon();
 
             services.AddSingleton(_ => new TerminalContainer(Terminal.Create()));
-            services.AddSingleton<ResizeHandler>();
-            services.AddSingleton<InputHandler>();
-            services.AddSingleton<OutputHandler>();
+            services.AddSingleton<ResizeService>();
+            services.AddSingleton<InputService>();
+            services.AddSingleton<OutputService>();
         }
     }
 }

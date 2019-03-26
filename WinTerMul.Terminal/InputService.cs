@@ -3,12 +3,12 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul.Terminal
 {
-    internal class InputHandler
+    internal class InputService
     {
         private readonly Pipe _inputPipe;
         private readonly IKernel32Api _kernel32Api;
 
-        public InputHandler(IKernel32Api kernel32Api, PipeStore pipeStore)
+        public InputService(IKernel32Api kernel32Api, PipeStore pipeStore)
         {
             _kernel32Api = kernel32Api;
             _inputPipe = pipeStore(PipeType.Input);

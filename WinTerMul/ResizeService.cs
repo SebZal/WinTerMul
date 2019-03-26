@@ -9,7 +9,7 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
-    internal class ResizeHandler : IDisposable
+    internal class ResizeService : IDisposable
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
@@ -17,7 +17,7 @@ namespace WinTerMul
 
         private byte[] _previousHash;
 
-        public ResizeHandler(
+        public ResizeService(
             TerminalContainer terminalContainer,
             IKernel32Api kernel32Api)
         {

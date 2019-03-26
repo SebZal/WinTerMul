@@ -5,14 +5,14 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
-    internal class InputHandler : IDisposable
+    internal class InputService : IDisposable
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
 
         private bool _wasLastKeyCtrlK;
 
-        public InputHandler(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
+        public InputService(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;

@@ -23,8 +23,8 @@ namespace WinTerMul.Terminal
             using (var serviceProvider = services.BuildServiceProvider())
             {
                 var inputPipe = serviceProvider.GetService<PipeStore>()(PipeType.Input);
-                var outputHandler = serviceProvider.GetService<OutputHandler>();
-                var inputHandler = serviceProvider.GetService<InputHandler>();
+                var outputService = serviceProvider.GetService<OutputService>();
+                var inputService = serviceProvider.GetService<InputService>();
 
                 var process = new Process
                 {
@@ -44,8 +44,8 @@ namespace WinTerMul.Terminal
                 {
                     Thread.Sleep(10);
 
-                    outputHandler.HandleOutput();
-                    inputHandler.HandleInput(out var kill);
+                    outputService.HandleOutput();
+                    inputService.HandleInput(out var kill);
 
                     if (kill || IsProcessDead(parentProcessId))
                     {

@@ -7,12 +7,12 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
-    internal class OutputHandler
+    internal class OutputService
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
 
-        public OutputHandler(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
+        public OutputService(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;

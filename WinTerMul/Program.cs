@@ -12,11 +12,11 @@ namespace WinTerMul
             new Startup().ConfigureServices(services);
             using (var serviceProvider = services.BuildServiceProvider())
             {
-                serviceProvider.GetService<OutputHandler>().StartOutputHandlingThread();
+                serviceProvider.GetService<OutputService>().StartOutputHandlingThread();
 
                 var terminalContainer = serviceProvider.GetService<TerminalContainer>();
-                var resizeHandler = serviceProvider.GetService<ResizeHandler>();
-                var inputHandler = serviceProvider.GetService<InputHandler>();
+                var resizeService = serviceProvider.GetService<ResizeService>();
+                var inputService = serviceProvider.GetService<InputService>();
 
                 while (true)
                 {
@@ -28,8 +28,8 @@ namespace WinTerMul
                         break;
                     }
 
-                    resizeHandler.HandleResize();
-                    inputHandler.HandleInput();
+                    resizeService.HandleResize();
+                    inputService.HandleInput();
                 }
             }
         }
