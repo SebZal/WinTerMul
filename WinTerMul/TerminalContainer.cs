@@ -16,6 +16,8 @@ namespace WinTerMul
             _terminals = new List<Terminal>(terminals);
         }
 
+        public event EventHandler<EventArgs> ActiveTerminalChanged = (_, __) => { };
+
         public Terminal ActiveTerminal
         {
             get
@@ -29,6 +31,7 @@ namespace WinTerMul
             {
                 lock (_lock)
                 {
+                    ActiveTerminalChanged(this, EventArgs.Empty);
                     _activeTerminal = value;
                 }
             }
@@ -126,6 +129,8 @@ namespace WinTerMul
                 terminal.Dispose();
             }
             _terminals.Clear();
+
+            ActiveTerminalChanged = null;
         }
     }
 }
