@@ -30,24 +30,21 @@ namespace WinTerMul
                     var localTerminal = (Terminal)((object[])state)[1];
 
                     var outputData = (OutputData)transferableTask.Result;
-                    if (outputData != null)
-                    {
-                        var writeRegion = outputData.WriteRegion;
-                        var cursorPosition = outputData.CursorPosition;
+                    var writeRegion = outputData.WriteRegion;
+                    var cursorPosition = outputData.CursorPosition;
 
-                        writeRegion.Left += localOffset;
-                        writeRegion.Right += localOffset;
-                        cursorPosition.X += localOffset;
+                    writeRegion.Left += localOffset;
+                    writeRegion.Right += localOffset;
+                    cursorPosition.X += localOffset;
 
-                        _kernel32Api.WriteConsoleOutput(
-                            outputData.Buffer,
-                            outputData.BufferSize,
-                            outputData.BufferCoord,
-                            writeRegion);
+                    _kernel32Api.WriteConsoleOutput(
+                        outputData.Buffer,
+                        outputData.BufferSize,
+                        outputData.BufferCoord,
+                        writeRegion);
 
-                        localTerminal.CursorInfo = outputData.CursorInfo;
-                        localTerminal.CursorPosition = cursorPosition;
-                    }
+                    localTerminal.CursorInfo = outputData.CursorInfo;
+                    localTerminal.CursorPosition = cursorPosition;
                 }, new object[] { offset, terminal }));
 
                 offset += terminal.Width;

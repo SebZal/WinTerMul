@@ -25,11 +25,7 @@ namespace WinTerMul.Terminal
         public async Task HandleInputAsync()
         {
             var data = await _inputPipe.ReadAsync(_processService.CancellationToken);
-            if (data == null)
-            {
-                return;
-            }
-            else if (data.DataType == DataType.InputData)
+            if (data.DataType == DataType.InputData)
             {
                 _kernel32Api.WriteConsoleInput(((InputData)data).InputRecord);
             }
