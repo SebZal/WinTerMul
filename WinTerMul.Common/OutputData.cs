@@ -6,6 +6,7 @@ namespace WinTerMul.Common
     {
         public DataType DataType => DataType.OutputData;
 
+        public (int, CharInfo)[] BufferDiff { get; set; }
         public CharInfo[] Buffer { get; set; }
         public Coord BufferSize { get; set; }
         public Coord BufferCoord { get; set; }

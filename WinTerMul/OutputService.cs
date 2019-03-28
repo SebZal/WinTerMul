@@ -13,12 +13,14 @@ namespace WinTerMul
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
         private readonly Dictionary<Terminal, Task> _tasks;
+        private readonly Dictionary<Terminal, CharInfo[]> _previousBuffers;
 
         public OutputService(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
             _tasks = new Dictionary<Terminal, Task>();
+            _previousBuffers = new Dictionary<Terminal, CharInfo[]>();
 
             terminalContainer.ActiveTerminalChanged += TerminalContainer_ActiveTerminalChanged;
         }
@@ -57,8 +59,21 @@ namespace WinTerMul
                         writeRegion.Right += localOffset;
                         cursorPosition.X += localOffset;
 
+                        var buffer = outputData.Buffer;
+                        if (buffer == null && outputData.BufferDiff != null)
+                        {
+                            buffer = new CharInfo[outputData.BufferSize.X * outputData.BufferSize.Y];
+                            var length = Math.Min(buffer.Length, _previousBuffers[terminal].Length);
+                            Array.Copy(_previousBuffers[terminal], buffer, length);
+                            foreach (var diff in outputData.BufferDiff)
+                            {
+                                buffer[diff.Item1] = diff.Item2;
+                            }
+                        }
+                        _previousBuffers[terminal] = buffer;
+
                         _kernel32Api.WriteConsoleOutput(
-                            outputData.Buffer,
+                            buffer,
                             outputData.BufferSize,
                             outputData.BufferCoord,
                             writeRegion);

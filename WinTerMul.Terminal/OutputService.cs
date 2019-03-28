@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace WinTerMul.Terminal
         private int _delay;
         private DateTime _lastSpeedUpTime;
         private CancellationTokenSource _cancellationTokenSource;
+        private CharInfo[] _previousBuffer;
 
         public OutputService(
             IKernel32Api kernel32Api,
@@ -45,17 +47,37 @@ namespace WinTerMul.Terminal
 
             var outputData = new OutputData
             {
-                Buffer = new CharInfo[bufferInfo.Size.X * bufferInfo.Size.Y],
                 BufferSize = bufferInfo.Size,
                 BufferCoord = new Coord(),
                 WriteRegion = bufferInfo.Window,
                 CursorPosition = bufferInfo.CursorPosition
             };
 
-            outputData.Buffer = _kernel32Api.ReadConsoleOutput(
+            var buffer = _kernel32Api.ReadConsoleOutput(
                 outputData.BufferSize,
                 outputData.BufferCoord,
                 outputData.WriteRegion);
+
+            if (_previousBuffer == null)
+            {
+                outputData.Buffer = buffer;
+            }
+            else
+            {
+                var bufferDiff = new List<(int, CharInfo)>();
+                var length = Math.Min(buffer.Length, _previousBuffer.Length);
+                for (var i = 0; i < length; i++)
+                {
+                    if (buffer[i].Attributes != _previousBuffer[i].Attributes ||
+                        buffer[i].Char.AsciiChar != _previousBuffer[i].Char.AsciiChar ||
+                        buffer[i].Char.UnicodeChar != _previousBuffer[i].Char.UnicodeChar)
+                    {
+                        bufferDiff.Add((i, buffer[i]));
+                    }
+                }
+                outputData.BufferDiff = bufferDiff.ToArray();
+            }
+            _previousBuffer = buffer;
 
             outputData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
 
