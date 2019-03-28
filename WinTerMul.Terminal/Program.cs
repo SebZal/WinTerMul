@@ -52,6 +52,7 @@ namespace WinTerMul.Terminal
             catch (Exception ex)
             {
                 logger?.LogCritical(ex, "WinTerMul.Terminal exited unexpectedly.");
+                throw;
             }
         }
     }

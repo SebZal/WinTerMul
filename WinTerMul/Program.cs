@@ -62,6 +62,7 @@ namespace WinTerMul
             catch (Exception ex)
             {
                 logger?.LogCritical(ex, "WinTerMul exited unexpectedly.");
+                throw;
             }
         }
     }

@@ -5,9 +5,11 @@ namespace WinTerMul.Common.Logging
 {
     internal static class LoggingBuilderExtensions
     {
-        public static ILoggingBuilder AddFileLogger(this ILoggingBuilder loggingBuilder)
+        public static ILoggingBuilder AddFileLogger(
+            this ILoggingBuilder loggingBuilder,
+            WinTerMulConfiguration configuration)
         {
-            loggingBuilder.SetMinimumLevel(LogLevel.Trace); // TODO get this from a config file instead.
+            loggingBuilder.SetMinimumLevel(configuration.LogLevel);
             loggingBuilder.Services.AddTransient(x => x.GetRequiredService<ILoggerFactory>().CreateLogger(""));
             return loggingBuilder.AddProvider(new FileLoggerProvider());
         }
