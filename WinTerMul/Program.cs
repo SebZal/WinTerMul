@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -33,8 +32,6 @@ namespace WinTerMul
 
                     while (true)
                     {
-                        Thread.Sleep(10);
-
                         var terminals = terminalContainer.GetTerminals();
                         if (terminals.Count == 0)
                         {

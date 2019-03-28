@@ -67,12 +67,6 @@ namespace WinTerMul.Common.Kernel32
             int nLength,
             out int lpNumberOfEventsRead);
 
-        [DllImport("Kernel32", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetNumberOfConsoleInputEvents(
-            IntPtr hConsoleInput,
-            out int lpcNumberOfEvents);
-
         [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern IntPtr GetStdHandle(StdHandle nStdHandle);
 

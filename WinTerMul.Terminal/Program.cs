@@ -32,10 +32,8 @@ namespace WinTerMul.Terminal
 
                     var outputTask = Task.CompletedTask;
                     var inputTask = Task.CompletedTask;
-                    while (!processService.ShouldClose()) // TODO use event based system instead of polling
+                    while (!processService.ShouldClose())
                     {
-                        Thread.Sleep(10);
-
                         if (outputTask.IsCompleted)
                         {
                             outputTask = outputService.HandleOutputAsync();

@@ -78,17 +78,6 @@ namespace WinTerMul.Common.Kernel32
 
         public InputRecord ReadConsoleInput()
         {
-            if (!NativeMethods.GetNumberOfConsoleInputEvents(_inputHandle, out var numberOfEvents))
-            {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
-            }
-
-            if (numberOfEvents == 0)
-            {
-                return new InputRecord();
-            }
-
             if (!NativeMethods.ReadConsoleInput(_inputHandle, out var buffer, 1, out _))
             {
                 // TODO handle error

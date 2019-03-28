@@ -74,6 +74,8 @@ namespace WinTerMul
                     }
                 }
             }
+
+            await Task.Delay(500);
         }
 
         public void Dispose()
