@@ -36,7 +36,7 @@ namespace WinTerMul.Terminal
 
         public void SlowDownPolling()
         {
-            _delay = 500;
+            _delay = 1000;
         }
 
         public async Task HandleOutputAsync()

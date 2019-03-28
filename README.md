@@ -18,5 +18,4 @@ A terminal multiplexer for Windows.
 - [ ] Speed up startup time.
 - [ ] Add XML documentation.
 - [x] Add configuration file.
-- [ ] Fix issue where CPU increases when a pane is closed.
 - [ ] Cleanup all TODOs in source code.

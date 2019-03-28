@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using WinTerMul.Common;
@@ -26,7 +27,15 @@ namespace WinTerMul
         {
             short offset = 0;
 
-            foreach (var terminal in _terminalContainer.GetTerminals())
+            var terminals = _terminalContainer.GetTerminals().ToList();
+
+            var tasksToRemove = _tasks.Keys.Where(x => !terminals.Contains(x));
+            foreach (var taskToRemvoe in tasksToRemove)
+            {
+                _tasks.Remove(taskToRemvoe);
+            }
+
+            foreach (var terminal in terminals)
             {
                 if (!_tasks.ContainsKey(terminal) || _tasks[terminal].IsCompleted)
                 {
