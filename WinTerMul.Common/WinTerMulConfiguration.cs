@@ -22,6 +22,7 @@ namespace WinTerMul.Common
         public char SetNextTerminalActiveKey => _configuration["SetNextTerminalActiveKey"][0];
         public char SetPreviousTerminalActive => _configuration["SetPreviousTerminalActive"][0];
         public char VerticalSplitKey => _configuration["VerticalSplitKey"][0];
+        public char ClosePaneKey => _configuration["ClosePaneKey"][0];
 
         private void Validate(IConfiguration configuration)
         {
@@ -35,6 +36,7 @@ namespace WinTerMul.Common
             ValidateKeyBinding(configuration, nameof(SetNextTerminalActiveKey));
             ValidateKeyBinding(configuration, nameof(SetPreviousTerminalActive));
             ValidateKeyBinding(configuration, nameof(VerticalSplitKey));
+            ValidateKeyBinding(configuration, nameof(ClosePaneKey));
         }
 
         private void ValidateLogLevel(IConfiguration configuration)

@@ -59,6 +59,10 @@ namespace WinTerMul
                     {
                         _terminalContainer.AddTerminal(Terminal.Create());
                     }
+                    else if (unicodeChar == _configuration.ClosePaneKey)
+                    {
+                        await _terminalContainer.ActiveTerminal?.In.WriteAsync(new CloseCommand());
+                    }
 
                     return;
                 }
