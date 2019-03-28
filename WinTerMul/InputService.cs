@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using WinTerMul.Common;
@@ -10,13 +11,26 @@ namespace WinTerMul
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
+        private readonly WinTerMulConfiguration _configuration;
+        private readonly int _prefixKeyWithoutCtrl;
+        private readonly int _prefixKey;
+        private readonly int[] _charactersToIgnoreAfterPrefixKey;
 
-        private bool _wasLastKeyCtrlK;
+        private bool _wasLastKeyPrefixKey;
 
-        public InputService(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
+        public InputService(
+            TerminalContainer terminalContainer,
+            IKernel32Api kernel32Api,
+            WinTerMulConfiguration configuration)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
+            _configuration = configuration;
+            _prefixKeyWithoutCtrl = _configuration.PrefixKey[2];
+            _prefixKey = _prefixKeyWithoutCtrl - 'a' + 1;
+            _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0, 15 };
+
+            Console.TreatControlCAsInput = true;
         }
 
         public async Task HandleInputAsync()
@@ -24,38 +38,34 @@ namespace WinTerMul
             var inputRecord = _kernel32Api.ReadConsoleInput();
             if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
             {
-                if (_wasLastKeyCtrlK)
+                if (_wasLastKeyPrefixKey)
                 {
-                    _wasLastKeyCtrlK = false;
+                    _wasLastKeyPrefixKey = false;
 
-                    switch (inputRecord.Event.KeyEvent.Char.UnicodeChar)
+                    var unicodeChar = inputRecord.Event.KeyEvent.Char.UnicodeChar;
+                    if (_charactersToIgnoreAfterPrefixKey.Contains(unicodeChar))
                     {
-                        case 'k':
-                        case '\v':
-                        case '\0':
-                        case '\u000f':
-                            _wasLastKeyCtrlK = true;
-                            break;
-                        case 'l':
-                            _terminalContainer.SetNextTerminalActive();
-                            break;
-                        case 'h':
-                            _terminalContainer.SetPreviousTerminalActive();
-                            break;
-                        case 'v':
-                            _terminalContainer.AddTerminal(Terminal.Create());
-                            break;
-                        //case 'h': // TODO horizontal split
-                        default:
-                            break;
+                        _wasLastKeyPrefixKey = true;
+                    }
+                    else if (unicodeChar == _configuration.SetNextTerminalActiveKey)
+                    {
+                        _terminalContainer.SetNextTerminalActive();
+                    }
+                    else if (unicodeChar == _configuration.SetPreviousTerminalActive)
+                    {
+                        _terminalContainer.SetPreviousTerminalActive();
+                    }
+                    else if (unicodeChar == _configuration.VerticalSplitKey)
+                    {
+                        _terminalContainer.AddTerminal(Terminal.Create());
                     }
 
                     return;
                 }
 
-                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == '\v') // CTRL + k
+                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == _prefixKey)
                 {
-                    _wasLastKeyCtrlK = true;
+                    _wasLastKeyPrefixKey = true;
                     return;
                 }
 

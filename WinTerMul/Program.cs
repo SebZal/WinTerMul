@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,7 +62,17 @@ namespace WinTerMul
             }
             catch (Exception ex)
             {
-                logger?.LogCritical(ex, "WinTerMul exited unexpectedly.");
+                if (logger == null)
+                {
+                    File.AppendAllText(
+                        "WinTerMul_critical_error.txt",
+                        DateTime.Now + " " + ex.Message + Environment.NewLine);
+                }
+                else
+                {
+                    logger.LogCritical(ex, "WinTerMul exited unexpectedly.");
+                }
+
                 throw;
             }
         }

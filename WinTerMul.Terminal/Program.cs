@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,7 +52,17 @@ namespace WinTerMul.Terminal
             }
             catch (Exception ex)
             {
-                logger?.LogCritical(ex, "WinTerMul.Terminal exited unexpectedly.");
+                if (logger == null)
+                {
+                    File.AppendAllText(
+                        "WinTerMulTerminal_critical_error.txt",
+                        DateTime.Now + " " + ex.Message + Environment.NewLine);
+                }
+                else
+                {
+                    logger.LogCritical(ex, "WinTerMul.Terminal exited unexpectedly.");
+                }
+
                 throw;
             }
         }
