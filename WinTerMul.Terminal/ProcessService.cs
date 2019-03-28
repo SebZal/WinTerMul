@@ -1,8 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Threading;
+
+using Microsoft.Extensions.Logging;
 
 using WinTerMul.Common.Kernel32;
 
@@ -12,14 +15,19 @@ namespace WinTerMul.Terminal
     {
         private readonly IKernel32Api _kernel32Api;
         private readonly InputArguments _inputArguments;
+        private readonly ILogger _logger;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         private Process _process;
 
-        public ProcessService(IKernel32Api kernel32Api, InputArguments inputArguments)
+        public ProcessService(
+            IKernel32Api kernel32Api,
+            InputArguments inputArguments,
+            ILogger logger)
         {
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _inputArguments = inputArguments ?? throw new ArgumentNullException(nameof(inputArguments));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
@@ -77,12 +85,12 @@ namespace WinTerMul.Terminal
             }
         }
 
-        private static bool IsProcessDead(int id)
+        private bool IsProcessDead(int id)
         {
             return Process.GetProcesses().All(x => x.Id != id);
         }
 
-        private static void KillAllChildProcesses(int id)
+        private void KillAllChildProcesses(int id)
         {
             if (id == 0)
             {
@@ -105,12 +113,23 @@ namespace WinTerMul.Terminal
                 var process = Process.GetProcessById(id);
                 if (process != null)
                 {
-                    process.Kill();
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error when trying to kill process ({id}).", id);
+                        if (!process.HasExited)
+                        {
+                            _logger.LogError(ex, "The process ({id} {name}) could not be terminated.", id, process.ProcessName);
+                        }
+                    }
                 }
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                // The process is not running or the identifier might be expired.
+                _logger.LogWarning(ex, "The process ({id}) is not running or the identifier might be expired", id);
             }
         }
     }
