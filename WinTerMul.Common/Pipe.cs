@@ -76,7 +76,7 @@ namespace WinTerMul.Common
 
         public void Dispose()
         {
-            _stream.Dispose();
+            _stream?.Dispose();
             _stream = null;
 
             _sha1.Dispose();

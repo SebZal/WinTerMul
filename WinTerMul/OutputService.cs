@@ -32,6 +32,11 @@ namespace WinTerMul
                 {
                     _tasks[terminal] = terminal.Out.ReadAsync().ContinueWith((transferableTask, state) =>
                     {
+                        if (transferableTask.IsFaulted)
+                        {
+                            return;
+                        }
+
                         var localOffset = (short)((object[])state)[0];
                         var localTerminal = (Terminal)((object[])state)[1];
 

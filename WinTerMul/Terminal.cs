@@ -42,13 +42,13 @@ namespace WinTerMul
         {
             // TODO setting to null causes null reference exceptions, fix these
 
-            Out.Dispose();
+            Out?.Dispose();
             Out = null;
 
-            In.Dispose();
+            In?.Dispose();
             In = null;
 
-            Process.Dispose();
+            Process?.Dispose();
             Process = null;
         }
     }
