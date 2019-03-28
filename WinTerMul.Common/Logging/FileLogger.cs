@@ -63,6 +63,7 @@ namespace WinTerMul.Common.Logging
             return new
             {
                 exception.Message,
+                ExceptionType = exception.GetType(),
                 InnerException = innerException,
                 StackTrace = Environment.NewLine + exception.StackTrace
             };
