@@ -41,9 +41,11 @@ namespace WinTerMul.Common.Logging
                     {
                         Formatting = Formatting.Indented,
                         ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    });
+                    })
+                    .Replace(@"\\", @"\")
+                    .Replace(@"\r\n", Environment.NewLine);
 
-                log +=  "|" + serializedException;
+                log += "|" + serializedException;
             }
 
             lock (Lock)
@@ -62,7 +64,7 @@ namespace WinTerMul.Common.Logging
             {
                 exception.Message,
                 InnerException = innerException,
-                exception.StackTrace,
+                StackTrace = Environment.NewLine + exception.StackTrace
             };
         }
 
@@ -76,7 +78,7 @@ namespace WinTerMul.Common.Logging
                 return "";
             }
 
-            const int skipFrames = 5; 
+            const int skipFrames = 5;
             var stackFrame = new StackFrame(skipFrames, true);
             var callerMethod = stackFrame.GetMethod();
             var fullClassName = callerMethod.ReflectedType.Namespace + "." + callerMethod.ReflectedType.Name;
@@ -91,7 +93,7 @@ namespace WinTerMul.Common.Logging
 
         private bool IsCalledFromLoggerExtensions()
         {
-            const int skipFrames = 4; 
+            const int skipFrames = 4;
             var callerMethod = new StackFrame(skipFrames, true).GetMethod();
             var fullClassName = callerMethod.ReflectedType.Namespace + "." + callerMethod.ReflectedType.Name;
             return fullClassName == typeof(LoggerExtensions).FullName;

@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace WinTerMul
 {
@@ -9,46 +11,57 @@ namespace WinTerMul
     {
         private static void Main(string[] args)
         {
-            var services = new ServiceCollection();
-            new Startup().ConfigureServices(services);
-            using (var serviceProvider = services.BuildServiceProvider())
+            ILogger logger = null;
+
+            try
             {
-                var terminalContainer = serviceProvider.GetService<TerminalContainer>();
-                var resizeService = serviceProvider.GetService<ResizeService>();
-                var inputService = serviceProvider.GetService<InputService>();
-                var outputService = serviceProvider.GetService<OutputService>();
-
-                var inputTask = Task.CompletedTask;
-                var resizeTask = Task.CompletedTask;
-                var outputTask = Task.CompletedTask;
-
-                while (true)
+                var services = new ServiceCollection();
+                new Startup().ConfigureServices(services);
+                using (var serviceProvider = services.BuildServiceProvider())
                 {
-                    Thread.Sleep(10);
+                    logger = serviceProvider.GetRequiredService<ILogger>();
 
-                    var terminals = terminalContainer.GetTerminals();
-                    if (terminals.Count == 0)
+                    var terminalContainer = serviceProvider.GetRequiredService<TerminalContainer>();
+                    var resizeService = serviceProvider.GetRequiredService<ResizeService>();
+                    var inputService = serviceProvider.GetRequiredService<InputService>();
+                    var outputService = serviceProvider.GetRequiredService<OutputService>();
+
+                    var inputTask = Task.CompletedTask;
+                    var resizeTask = Task.CompletedTask;
+                    var outputTask = Task.CompletedTask;
+
+                    while (true)
                     {
-                        break;
-                    }
+                        Thread.Sleep(10);
 
-                    if (inputTask.IsCompleted)
-                    {
-                        inputTask = inputService.HandleInputAsync();
-                    }
+                        var terminals = terminalContainer.GetTerminals();
+                        if (terminals.Count == 0)
+                        {
+                            break;
+                        }
 
-                    if (resizeTask.IsCompleted)
-                    {
-                        resizeTask = resizeService.HandleResizeAsync();
-                    }
+                        if (inputTask.IsCompleted)
+                        {
+                            inputTask = inputService.HandleInputAsync();
+                        }
 
-                    if (outputTask.IsCompleted)
-                    {
-                        outputTask = outputService.HandleOutputAsync();
-                    }
+                        if (resizeTask.IsCompleted)
+                        {
+                            resizeTask = resizeService.HandleResizeAsync();
+                        }
 
-                    Task.WaitAny(inputTask, resizeTask, outputTask);
+                        if (outputTask.IsCompleted)
+                        {
+                            outputTask = outputService.HandleOutputAsync();
+                        }
+
+                        Task.WaitAny(inputTask, resizeTask, outputTask);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogCritical(ex, "WinTerMul exited unexpectedly.");
             }
         }
     }

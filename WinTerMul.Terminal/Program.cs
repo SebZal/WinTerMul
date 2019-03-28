@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace WinTerMul.Terminal
 {
@@ -9,36 +11,47 @@ namespace WinTerMul.Terminal
     {
         private static void Main(string[] args)
         {
-            var inputArguments = new InputArguments(args);
+            ILogger logger = null;
 
-            var services = new ServiceCollection();
-            new Startup(inputArguments).ConfigureServices(services);
-            using (var serviceProvider = services.BuildServiceProvider())
+            try
             {
-                var outputService = serviceProvider.GetService<OutputService>();
-                var inputService = serviceProvider.GetService<InputService>();
-                var processService = serviceProvider.GetService<ProcessService>();
+                var inputArguments = new InputArguments(args);
 
-                processService.StartNewTerminal();
-
-                var outputTask = Task.CompletedTask;
-                var inputTask = Task.CompletedTask;
-                while (!processService.ShouldClose()) // TODO use event based system instead of polling
+                var services = new ServiceCollection();
+                new Startup(inputArguments).ConfigureServices(services);
+                using (var serviceProvider = services.BuildServiceProvider())
                 {
-                    Thread.Sleep(10);
+                    logger = serviceProvider.GetRequiredService<ILogger>();
 
-                    if (outputTask.IsCompleted)
+                    var outputService = serviceProvider.GetRequiredService<OutputService>();
+                    var inputService = serviceProvider.GetRequiredService<InputService>();
+                    var processService = serviceProvider.GetRequiredService<ProcessService>();
+
+                    processService.StartNewTerminal();
+
+                    var outputTask = Task.CompletedTask;
+                    var inputTask = Task.CompletedTask;
+                    while (!processService.ShouldClose()) // TODO use event based system instead of polling
                     {
-                        outputTask = outputService.HandleOutputAsync();
-                    }
+                        Thread.Sleep(10);
 
-                    if (inputTask.IsCompleted)
-                    {
-                        inputTask = inputService.HandleInputAsync();
-                    }
+                        if (outputTask.IsCompleted)
+                        {
+                            outputTask = outputService.HandleOutputAsync();
+                        }
 
-                    Task.WaitAny(outputTask, inputTask);
+                        if (inputTask.IsCompleted)
+                        {
+                            inputTask = inputService.HandleInputAsync();
+                        }
+
+                        Task.WaitAny(outputTask, inputTask);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogCritical(ex, "WinTerMul.Terminal exited unexpectedly.");
             }
         }
     }
