@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using WinTerMul.Common;
@@ -12,6 +13,10 @@ namespace WinTerMul.Terminal
         private readonly ProcessService _processService;
         private readonly Pipe _outputPipe;
 
+        private int _delay;
+        private DateTime _lastSpeedUpTime;
+        private CancellationTokenSource _cancellationTokenSource;
+
         public OutputService(
             IKernel32Api kernel32Api,
             PipeStore pipeStore,
@@ -20,6 +25,18 @@ namespace WinTerMul.Terminal
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _outputPipe = pipeStore(PipeType.Output) ?? throw new ArgumentNullException(nameof(pipeStore));
             _processService = processService ?? throw new ArgumentNullException(nameof(processService));
+        }
+
+        public void SpeedUpPolling()
+        {
+            _delay = 50;
+            _cancellationTokenSource?.Cancel();
+            _lastSpeedUpTime = DateTime.Now;
+        }
+
+        public void SlowDownPolling()
+        {
+            _delay = 500;
         }
 
         public async Task HandleOutputAsync()
@@ -42,7 +59,19 @@ namespace WinTerMul.Terminal
 
             outputData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
 
-            await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
+            var isOutputChanged = await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
+
+            if (isOutputChanged)
+            {
+                SpeedUpPolling();
+            }
+            else if (DateTime.Now - _lastSpeedUpTime > TimeSpan.FromMilliseconds(1000))
+            {
+                SlowDownPolling();
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            await Task.Delay(_delay, _cancellationTokenSource.Token);
         }
 
         public void Dispose()

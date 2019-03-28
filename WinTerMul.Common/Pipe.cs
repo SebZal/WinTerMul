@@ -37,7 +37,7 @@ namespace WinTerMul.Common
             return new Pipe(id, stream);
         }
 
-        public async Task WriteAsync(
+        public async Task<bool> WriteAsync(
             ITransferable @object,
             bool writeOnlyIfDataHasChanged = false,
             CancellationToken cancellationToken = default(CancellationToken))
@@ -48,7 +48,7 @@ namespace WinTerMul.Common
 
             if (writeOnlyIfDataHasChanged && !HasDataChanged(data))
             {
-                return;
+                return false;
             }
 
             _stream.WaitForPipeDrain();
@@ -58,6 +58,8 @@ namespace WinTerMul.Common
             Array.Copy(data, 0, buffer, sizeof(ushort), data.Length);
 
             await _stream.WriteAsync(buffer, 0, buffer.Length, cancellationToken);
+
+            return true;
         }
 
         public async Task<ITransferable> ReadAsync(

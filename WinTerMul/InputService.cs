@@ -35,7 +35,7 @@ namespace WinTerMul
 
         public async Task HandleInputAsync()
         {
-            var inputRecord = _kernel32Api.ReadConsoleInput();
+            var inputRecord = await Task.Run(() => _kernel32Api.ReadConsoleInput());
             if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
             {
                 if (_wasLastKeyPrefixKey)
