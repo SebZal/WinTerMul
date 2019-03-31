@@ -1,4 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace WinTerMul.Common.Kernel32
@@ -20,8 +23,7 @@ namespace WinTerMul.Common.Kernel32
 
             if (!NativeMethods.ReadConsoleOutput(_outputHandle, buffer, bufferSize, bufferCoord, ref readRegion))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
 
             return buffer;
@@ -31,8 +33,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.WriteConsoleOutput(_outputHandle, buffer, bufferSize, bufferCoord, ref writeRegion))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -40,8 +41,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.GetConsoleScreenBufferInfo(_outputHandle, out var consoleScreenBufferInfo))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
 
             return consoleScreenBufferInfo;
@@ -51,8 +51,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.GetConsoleCursorInfo(_outputHandle, out var consoleCursorInfo))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
 
             return consoleCursorInfo;
@@ -62,8 +61,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.SetConsoleCursorInfo(_outputHandle, ref consoleCursorInfo))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -71,8 +69,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.SetConsoleCursorPosition(_outputHandle, cursorPosition))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -80,8 +77,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.ReadConsoleInput(_inputHandle, out var buffer, 1, out _))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
 
             return buffer;
@@ -91,8 +87,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.WriteConsoleInput(_inputHandle, new[] { buffer }, 1, out _))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -100,8 +95,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.SetConsoleWindowInfo(_outputHandle, absolute, ref consoleWindow))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -109,8 +103,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.SetConsoleScreenBufferSize(_outputHandle, size))
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -118,8 +111,7 @@ namespace WinTerMul.Common.Kernel32
         {
             if (!NativeMethods.FreeConsole())
             {
-                // TODO handle error
-                // TODO throw exception and handle every place this is used
+                HandleError();
             }
         }
 
@@ -130,14 +122,19 @@ namespace WinTerMul.Common.Kernel32
             {
                 if (++timesFailed > 10)
                 {
-                    // TODO handle error
-                    // TODO throw exception and handle every place this is used
+                    HandleError();
                 }
                 Thread.Sleep(10);
             }
 
             _inputHandle = NativeMethods.GetStdHandle(StdHandle.StdInputHandle);
             _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
+        }
+
+        private void HandleError([CallerMemberName] string caller = null)
+        {
+            var errorCode = Marshal.GetLastWin32Error();
+            throw new Win32Exception(errorCode, $@"Method ""{caller}"" failed with Win32 error code {errorCode}.");
         }
     }
 }

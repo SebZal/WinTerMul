@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -12,13 +15,18 @@ namespace WinTerMul
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
+        private readonly ILogger _logger;
         private readonly Dictionary<Terminal, Task> _tasks;
         private readonly Dictionary<Terminal, CharInfo[]> _previousBuffers;
 
-        public OutputService(TerminalContainer terminalContainer, IKernel32Api kernel32Api)
+        public OutputService(
+            TerminalContainer terminalContainer,
+            IKernel32Api kernel32Api,
+            ILogger logger)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
+            _logger = logger;
             _tasks = new Dictionary<Terminal, Task>();
             _previousBuffers = new Dictionary<Terminal, CharInfo[]>();
 
@@ -81,16 +89,23 @@ namespace WinTerMul
 
         private void UpdateCursor()
         {
-            var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
-            if (cursorPosition.HasValue)
+            try
             {
-                _kernel32Api.SetConsoleCursorPosition(cursorPosition.Value);
-            }
+                var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
+                if (cursorPosition.HasValue)
+                {
+                    _kernel32Api.SetConsoleCursorPosition(cursorPosition.Value);
+                }
 
-            var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
-            if (cursorInfo.HasValue)
+                var cursorInfo = _terminalContainer.ActiveTerminal?.CursorInfo;
+                if (cursorInfo.HasValue)
+                {
+                    _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
+                }
+            }
+            catch (Win32Exception ex)
             {
-                _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
+                _logger.LogWarning(ex, "Could not set cursor position.");
             }
         }
 
