@@ -14,7 +14,7 @@ A terminal multiplexer for Windows.
 - [x] Kill parent process if all child processes are killed.
 - [x] Display caret (only in active pane), handle insert mode as well. Don't display caret in vifm.
 - [x] Move caret to active pane after pane switch.
-- [ ] Reduce CPU usage.
+- [x] Reduce CPU usage.
 - [ ] Speed up startup time.
 - [ ] Add XML documentation.
 - [x] Add configuration file.
