@@ -59,17 +59,7 @@ namespace WinTerMul
                         writeRegion.Right += localOffset;
                         cursorPosition.X += localOffset;
 
-                        var buffer = outputData.Buffer;
-                        if (buffer == null && outputData.BufferDiff != null)
-                        {
-                            buffer = new CharInfo[outputData.BufferSize.X * outputData.BufferSize.Y];
-                            var length = Math.Min(buffer.Length, _previousBuffers[terminal].Length);
-                            Array.Copy(_previousBuffers[terminal], buffer, length);
-                            foreach (var diff in outputData.BufferDiff)
-                            {
-                                buffer[diff.Item1] = diff.Item2;
-                            }
-                        }
+                        var buffer = GetBuffer(outputData, terminal);
                         _previousBuffers[terminal] = buffer;
 
                         _kernel32Api.WriteConsoleOutput(
@@ -89,7 +79,7 @@ namespace WinTerMul
             await Task.WhenAny(_tasks.Values).ContinueWith(_ => UpdateCursor());
         }
 
-        public void UpdateCursor()
+        private void UpdateCursor()
         {
             var cursorPosition = _terminalContainer.ActiveTerminal?.CursorPosition;
             if (cursorPosition.HasValue)
@@ -102,6 +92,26 @@ namespace WinTerMul
             {
                 _kernel32Api.SetConsoleCursorInfo(cursorInfo.Value);
             }
+        }
+
+        private CharInfo[] GetBuffer(OutputData outputData, Terminal terminal)
+        {
+            var buffer = outputData.Buffer;
+
+            if (buffer == null && outputData.BufferDiff != null)
+            {
+                buffer = new CharInfo[outputData.BufferSize.X * outputData.BufferSize.Y];
+
+                var length = Math.Min(buffer.Length, _previousBuffers[terminal].Length);
+                Array.Copy(_previousBuffers[terminal], buffer, length);
+
+                foreach (var diff in outputData.BufferDiff)
+                {
+                    buffer[diff.Index] = diff.CharInfo;
+                }
+            }
+
+            return buffer;
         }
 
         private void TerminalContainer_ActiveTerminalChanged(object sender, EventArgs e)

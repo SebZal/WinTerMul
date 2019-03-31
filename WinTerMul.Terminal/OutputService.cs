@@ -64,18 +64,7 @@ namespace WinTerMul.Terminal
             }
             else
             {
-                var bufferDiff = new List<(int, CharInfo)>();
-                var length = Math.Min(buffer.Length, _previousBuffer.Length);
-                for (var i = 0; i < length; i++)
-                {
-                    if (buffer[i].Attributes != _previousBuffer[i].Attributes ||
-                        buffer[i].Char.AsciiChar != _previousBuffer[i].Char.AsciiChar ||
-                        buffer[i].Char.UnicodeChar != _previousBuffer[i].Char.UnicodeChar)
-                    {
-                        bufferDiff.Add((i, buffer[i]));
-                    }
-                }
-                outputData.BufferDiff = bufferDiff.ToArray();
+                outputData.BufferDiff = CreateBufferDiff(buffer);
             }
             _previousBuffer = buffer;
 
@@ -99,6 +88,22 @@ namespace WinTerMul.Terminal
         public void Dispose()
         {
             _outputPipe.Dispose();
+        }
+
+        private IEnumerable<BufferDiffElement> CreateBufferDiff(CharInfo[] buffer)
+        {
+            var bufferDiff = new List<BufferDiffElement>();
+            var length = Math.Min(buffer.Length, _previousBuffer.Length);
+            for (var i = 0; i < length; i++)
+            {
+                if (buffer[i].Attributes != _previousBuffer[i].Attributes ||
+                    buffer[i].Char.AsciiChar != _previousBuffer[i].Char.AsciiChar ||
+                    buffer[i].Char.UnicodeChar != _previousBuffer[i].Char.UnicodeChar)
+                {
+                    bufferDiff.Add(new BufferDiffElement { Index = i, CharInfo = buffer[i] });
+                }
+            }
+            return bufferDiff;
         }
     }
 }
