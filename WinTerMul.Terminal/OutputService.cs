@@ -44,7 +44,18 @@ namespace WinTerMul.Terminal
         public async Task HandleOutputAsync()
         {
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
+            var outputData = GetOutputData(bufferInfo);
+            var isOutputChanged = await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
+            await Sleep(isOutputChanged);
+        }
 
+        public void Dispose()
+        {
+            _outputPipe.Dispose();
+        }
+
+        private OutputData GetOutputData(ConsoleScreenBufferInfo bufferInfo)
+        {
             var outputData = new OutputData
             {
                 BufferSize = bufferInfo.Size,
@@ -70,24 +81,7 @@ namespace WinTerMul.Terminal
 
             outputData.CursorInfo = _kernel32Api.GetConsoleCursorInfo();
 
-            var isOutputChanged = await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
-
-            if (isOutputChanged)
-            {
-                SpeedUpPolling();
-            }
-            else if (DateTime.Now - _lastSpeedUpTime > TimeSpan.FromMilliseconds(1000))
-            {
-                SlowDownPolling();
-            }
-
-            _cancellationTokenSource = new CancellationTokenSource();
-            await Task.Delay(_delay, _cancellationTokenSource.Token);
-        }
-
-        public void Dispose()
-        {
-            _outputPipe.Dispose();
+            return outputData;
         }
 
         private IEnumerable<BufferDiffElement> CreateBufferDiff(CharInfo[] buffer)
@@ -104,6 +98,21 @@ namespace WinTerMul.Terminal
                 }
             }
             return bufferDiff;
+        }
+
+        private async Task Sleep(bool isOutputChanged)
+        {
+            if (isOutputChanged)
+            {
+                SpeedUpPolling();
+            }
+            else if (DateTime.Now - _lastSpeedUpTime > TimeSpan.FromMilliseconds(1000))
+            {
+                SlowDownPolling();
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            await Task.Delay(_delay, _cancellationTokenSource.Token);
         }
     }
 }
