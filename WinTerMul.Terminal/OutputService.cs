@@ -18,6 +18,7 @@ namespace WinTerMul.Terminal
         private DateTime _lastSpeedUpTime;
         private CancellationTokenSource _cancellationTokenSource;
         private CharInfo[] _previousBuffer;
+        private Coord _previousBufferSize;
 
         public OutputService(
             IKernel32Api kernel32Api,
@@ -44,6 +45,7 @@ namespace WinTerMul.Terminal
         public async Task HandleOutputAsync()
         {
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
+            ClearPreviousBufferIfNecessary(bufferInfo.Size);
             var outputData = GetOutputData(bufferInfo);
             var isOutputChanged = await _outputPipe.WriteAsync(outputData, true, _processService.CancellationToken);
             await Sleep(isOutputChanged);
@@ -98,6 +100,15 @@ namespace WinTerMul.Terminal
                 }
             }
             return bufferDiff;
+        }
+
+        private void ClearPreviousBufferIfNecessary(Coord bufferSize)
+        {
+            if (bufferSize.X != _previousBufferSize.X || bufferSize.Y != _previousBufferSize.Y)
+            {
+                _previousBufferSize = bufferSize;
+                _previousBuffer = null;
+            }
         }
 
         private async Task Sleep(bool isOutputChanged)
