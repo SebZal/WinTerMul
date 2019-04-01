@@ -23,6 +23,11 @@ namespace WinTerMul
 
         internal static Terminal Create(PipeFactory pipeFactory)
         {
+            if (pipeFactory == null)
+            {
+                throw new ArgumentNullException(nameof(pipeFactory));
+            }
+
             var terminal = new Terminal
             {
                 Out = pipeFactory.CreateServer(),

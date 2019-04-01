@@ -8,7 +8,7 @@ namespace WinTerMul
 
         public TerminalFactory(PipeFactory pipeFactory)
         {
-            _pipeFactory = pipeFactory;
+            _pipeFactory = pipeFactory ?? throw new System.ArgumentNullException(nameof(pipeFactory));
         }
 
         public Terminal CreateTerminal()

@@ -19,8 +19,8 @@ namespace WinTerMul
             TerminalContainer terminalContainer,
             IKernel32Api kernel32Api)
         {
-            _terminalContainer = terminalContainer;
-            _kernel32Api = kernel32Api;
+            _terminalContainer = terminalContainer ?? throw new ArgumentNullException(nameof(terminalContainer));
+            _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
         }
 
         public async Task HandleResizeAsync()

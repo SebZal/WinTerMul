@@ -25,9 +25,10 @@ namespace WinTerMul
             IKernel32Api kernel32Api,
             ILogger logger)
         {
-            _terminalContainer = terminalContainer;
-            _kernel32Api = kernel32Api;
-            _logger = logger;
+            _terminalContainer = terminalContainer ?? throw new ArgumentNullException(nameof(terminalContainer));
+            _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
             _tasks = new Dictionary<Terminal, Task>();
             _previousBuffers = new ConcurrentDictionary<Terminal, CharInfo[]>();
 

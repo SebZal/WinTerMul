@@ -12,6 +12,11 @@ namespace WinTerMul
 
         public TerminalContainer(params Terminal[] terminals)
         {
+            if (terminals == null)
+            {
+                throw new ArgumentNullException(nameof(terminals));
+            }
+
             _lock = new object();
             _terminals = new List<Terminal>(terminals);
         }

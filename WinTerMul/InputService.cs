@@ -25,10 +25,11 @@ namespace WinTerMul
             WinTerMulConfiguration configuration,
             TerminalFactory terminalFactory)
         {
-            _terminalContainer = terminalContainer;
-            _kernel32Api = kernel32Api;
-            _configuration = configuration;
-            _terminalFactory = terminalFactory;
+            _terminalContainer = terminalContainer ?? throw new ArgumentNullException(nameof(terminalContainer));
+            _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _terminalFactory = terminalFactory ?? throw new ArgumentNullException(nameof(terminalFactory));
+
             _prefixKeyWithoutCtrl = _configuration.PrefixKey[2];
             _prefixKey = _prefixKeyWithoutCtrl - 'a' + 1;
             _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0 };
