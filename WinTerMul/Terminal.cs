@@ -19,8 +19,7 @@ namespace WinTerMul
         public Coord CursorPosition { get; set; }
         public ConsoleCursorInfo CursorInfo { get; set; }
 
-        public short Width { get; set; } = 500;
-
+        public short Width { get; set; }
 
         internal static Terminal Create(PipeFactory pipeFactory)
         {

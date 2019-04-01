@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography;
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json;
 
 using WinTerMul.Common;
 using WinTerMul.Common.Kernel32;
@@ -14,9 +11,9 @@ namespace WinTerMul
     {
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
-        private readonly SHA1CryptoServiceProvider _sha1;
 
-        private byte[] _previousHash;
+        private short _previousWidth;
+        private short _previousHeight;
 
         public ResizeService(
             TerminalContainer terminalContainer,
@@ -24,8 +21,6 @@ namespace WinTerMul
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
-            _sha1 = new SHA1CryptoServiceProvider();
-            _previousHash = new byte[_sha1.HashSize / 8];
         }
 
         public async Task HandleResizeAsync()
@@ -37,34 +32,12 @@ namespace WinTerMul
             }
 
             var bufferInfo = _kernel32Api.GetConsoleScreenBufferInfo();
-            bufferInfo.CursorPosition = new Coord(); // Ignore cursor position
-            bufferInfo.MaximumWindowSize.X = (short)(bufferInfo.MaximumWindowSize.X / terminals.Count);
-            var hash = _sha1.ComputeHash(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(bufferInfo)));
+            var width = (short)(bufferInfo.MaximumWindowSize.X / terminals.Count);
+            var height = bufferInfo.MaximumWindowSize.Y;
 
-            var isHashDifferent = false;
-            for (int i = 0; i < hash.Length; i++)
+            if (IsResizeNecessary(width, height))
             {
-                if (hash[i] != _previousHash[i])
-                {
-                    isHashDifferent = true;
-                    break;
-                }
-            }
-
-            if (isHashDifferent)
-            {
-                _previousHash = hash;
-
-                foreach (var terminal in terminals)
-                {
-                    terminal.Width = bufferInfo.MaximumWindowSize.X;
-
-                    await terminal.In.WriteAsync(new ResizeCommand
-                    {
-                        Width = bufferInfo.MaximumWindowSize.X,
-                        Height = bufferInfo.MaximumWindowSize.Y
-                    });
-                }
+                await ResizeTerminals(terminals, width, height);
             }
 
             await Task.Delay(500);
@@ -72,8 +45,35 @@ namespace WinTerMul
 
         public void Dispose()
         {
-            _sha1.Dispose();
             _terminalContainer.Dispose();
+        }
+
+        private async Task ResizeTerminals(IEnumerable<Terminal> terminals, short width, short height)
+        {
+            foreach (var terminal in terminals)
+            {
+                terminal.Width = width;
+
+                await terminal.In.WriteAsync(new ResizeCommand
+                {
+                    Width = width,
+                    Height = height
+                });
+            }
+        }
+
+        private bool IsResizeNecessary(short width, short height)
+        {
+            var hasSizeChanged = false;
+
+            if (_previousWidth != width || _previousHeight != height)
+            {
+                hasSizeChanged = true;
+                _previousWidth = width;
+                _previousHeight = height;
+            }
+
+            return hasSizeChanged;
         }
     }
 }
