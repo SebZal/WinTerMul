@@ -14,6 +14,7 @@ namespace WinTerMul
 
         private short _previousWidth;
         private short _previousHeight;
+        private (DateTime, Func<Task>)? _pendingReisze;
 
         public ResizeService(
             TerminalContainer terminalContainer,
@@ -37,10 +38,24 @@ namespace WinTerMul
 
             if (IsResizeNecessary(width, height))
             {
-                await ResizeTerminals(terminals, width, height);
+                _pendingReisze = (DateTime.Now, async () => await ResizeTerminals(terminals, width, height));
             }
 
-            await Task.Delay(500);
+
+            if (_pendingReisze.HasValue)
+            {
+                if (DateTime.Now - _pendingReisze.Value.Item1 > TimeSpan.FromMilliseconds(100))
+                {
+                    await _pendingReisze.Value.Item2();
+                    _pendingReisze = null;
+                }
+
+                await Task.Delay(25);
+            }
+            else
+            {
+                await Task.Delay(500);
+            }
         }
 
         public void Dispose()

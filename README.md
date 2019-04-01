@@ -17,4 +17,4 @@ A terminal multiplexer for Windows.
 - [x] Reduce CPU usage.
 - [x] Add configuration file.
 - [ ] Cleanup all TODOs in source code.
-- [ ] Add info logs.
+- [x] Add info logs.
