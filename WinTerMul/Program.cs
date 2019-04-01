@@ -21,40 +21,7 @@ namespace WinTerMul
                 {
                     logger = serviceProvider.GetRequiredService<ILogger>();
 
-                    var terminalContainer = serviceProvider.GetRequiredService<TerminalContainer>();
-                    var resizeService = serviceProvider.GetRequiredService<ResizeService>();
-                    var inputService = serviceProvider.GetRequiredService<InputService>();
-                    var outputService = serviceProvider.GetRequiredService<OutputService>();
-
-                    var inputTask = Task.CompletedTask;
-                    var resizeTask = Task.CompletedTask;
-                    var outputTask = Task.CompletedTask;
-
-                    while (true)
-                    {
-                        var terminals = terminalContainer.GetTerminals();
-                        if (terminals.Count == 0)
-                        {
-                            break;
-                        }
-
-                        if (inputTask.IsCompleted)
-                        {
-                            inputTask = inputService.HandleInputAsync();
-                        }
-
-                        if (resizeTask.IsCompleted)
-                        {
-                            resizeTask = resizeService.HandleResizeAsync();
-                        }
-
-                        if (outputTask.IsCompleted)
-                        {
-                            outputTask = outputService.HandleOutputAsync();
-                        }
-
-                        Task.WaitAny(inputTask, resizeTask, outputTask);
-                    }
+                    Run(serviceProvider);
                 }
             }
             catch (Exception ex)
@@ -71,6 +38,44 @@ namespace WinTerMul
                 }
 
                 throw;
+            }
+        }
+
+        private static void Run(IServiceProvider serviceProvider)
+        {
+            var terminalContainer = serviceProvider.GetRequiredService<TerminalContainer>();
+            var resizeService = serviceProvider.GetRequiredService<ResizeService>();
+            var inputService = serviceProvider.GetRequiredService<InputService>();
+            var outputService = serviceProvider.GetRequiredService<OutputService>();
+
+            var inputTask = Task.CompletedTask;
+            var resizeTask = Task.CompletedTask;
+            var outputTask = Task.CompletedTask;
+
+            while (true)
+            {
+                var terminals = terminalContainer.GetTerminals();
+                if (terminals.Count == 0)
+                {
+                    break;
+                }
+
+                if (inputTask.IsCompleted)
+                {
+                    inputTask = inputService.HandleInputAsync();
+                }
+
+                if (resizeTask.IsCompleted)
+                {
+                    resizeTask = resizeService.HandleResizeAsync();
+                }
+
+                if (outputTask.IsCompleted)
+                {
+                    outputTask = outputService.HandleOutputAsync();
+                }
+
+                Task.WaitAny(inputTask, resizeTask, outputTask);
             }
         }
     }
