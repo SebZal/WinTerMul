@@ -23,29 +23,7 @@ namespace WinTerMul.Terminal
                 {
                     logger = serviceProvider.GetRequiredService<ILogger>();
 
-                    var outputService = serviceProvider.GetRequiredService<OutputService>();
-                    var inputService = serviceProvider.GetRequiredService<InputService>();
-                    var processService = serviceProvider.GetRequiredService<ProcessService>();
-
-                    processService.StartNewTerminal();
-
-                    var outputTask = Task.CompletedTask;
-                    var inputTask = Task.CompletedTask;
-                    while (!processService.ShouldClose())
-                    {
-                        if (outputTask.IsCompleted)
-                        {
-                            outputTask = outputService.HandleOutputAsync();
-                        }
-
-                        if (inputTask.IsCompleted)
-                        {
-                            outputService.SpeedUpPolling();
-                            inputTask = inputService.HandleInputAsync();
-                        }
-
-                        Task.WaitAny(outputTask, inputTask);
-                    }
+                    Run(serviceProvider);
                 }
             }
             catch (Exception ex)
@@ -62,6 +40,33 @@ namespace WinTerMul.Terminal
                 }
 
                 throw;
+            }
+        }
+
+        private static void Run(IServiceProvider serviceProvider)
+        {
+            var outputService = serviceProvider.GetRequiredService<OutputService>();
+            var inputService = serviceProvider.GetRequiredService<InputService>();
+            var processService = serviceProvider.GetRequiredService<ProcessService>();
+
+            processService.StartNewTerminal();
+
+            var outputTask = Task.CompletedTask;
+            var inputTask = Task.CompletedTask;
+            while (!processService.ShouldClose())
+            {
+                if (outputTask.IsCompleted)
+                {
+                    outputTask = outputService.HandleOutputAsync();
+                }
+
+                if (inputTask.IsCompleted)
+                {
+                    outputService.SpeedUpPolling();
+                    inputTask = inputService.HandleInputAsync();
+                }
+
+                Task.WaitAny(outputTask, inputTask);
             }
         }
     }
