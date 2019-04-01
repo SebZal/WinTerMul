@@ -41,57 +41,59 @@ namespace WinTerMul
             var inputRecord = await Task.Run(() => _kernel32Api.ReadConsoleInput());
             if (inputRecord.EventType == InputEventTypeFlag.KeyEvent)
             {
-                if (_wasLastKeyPrefixKey)
+                if (await HandlePrefixKeyAsync(inputRecord))
                 {
-                    _wasLastKeyPrefixKey = false;
-
-                    var unicodeChar = inputRecord.Event.KeyEvent.Char.UnicodeChar;
-                    if (_charactersToIgnoreAfterPrefixKey.Contains(unicodeChar))
-                    {
-                        _wasLastKeyPrefixKey = true;
-                    }
-                    else if (unicodeChar == _configuration.SetNextTerminalActiveKey)
-                    {
-                        _terminalContainer.SetNextTerminalActive();
-                    }
-                    else if (unicodeChar == _configuration.SetPreviousTerminalActive)
-                    {
-                        _terminalContainer.SetPreviousTerminalActive();
-                    }
-                    else if (unicodeChar == _configuration.VerticalSplitKey)
-                    {
-                        _terminalContainer.AddTerminal(_terminalFactory.CreateTerminal());
-                    }
-                    else if (unicodeChar == _configuration.ClosePaneKey)
-                    {
-                        await _terminalContainer.ActiveTerminal?.In.WriteAsync(new CloseCommand());
-                    }
-
                     return;
                 }
 
-                if (inputRecord.Event.KeyEvent.Char.UnicodeChar == _prefixKey)
-                {
-                    _wasLastKeyPrefixKey = true;
-                    return;
-                }
-
-                try
-                {
-                    var inputData = new InputData { InputRecord = inputRecord };
-                    await _terminalContainer.ActiveTerminal?.In.WriteAsync(inputData);
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Process has exited, new active terminal will be set in next iteration.
-                    return;
-                }
+                var inputData = new InputData { InputRecord = inputRecord };
+                await _terminalContainer.ActiveTerminal?.In.WriteAsync(inputData);
             }
         }
 
         public void Dispose()
         {
             _terminalContainer?.Dispose();
+        }
+
+        private async Task<bool> HandlePrefixKeyAsync(InputRecord inputRecord)
+        {
+            if (_wasLastKeyPrefixKey)
+            {
+                _wasLastKeyPrefixKey = false;
+
+                var unicodeChar = inputRecord.Event.KeyEvent.Char.UnicodeChar;
+                if (_charactersToIgnoreAfterPrefixKey.Contains(unicodeChar))
+                {
+                    _wasLastKeyPrefixKey = true;
+                }
+                else if (unicodeChar == _configuration.SetNextTerminalActiveKey)
+                {
+                    _terminalContainer.SetNextTerminalActive();
+                }
+                else if (unicodeChar == _configuration.SetPreviousTerminalActive)
+                {
+                    _terminalContainer.SetPreviousTerminalActive();
+                }
+                else if (unicodeChar == _configuration.VerticalSplitKey)
+                {
+                    _terminalContainer.AddTerminal(_terminalFactory.CreateTerminal());
+                }
+                else if (unicodeChar == _configuration.ClosePaneKey)
+                {
+                    await _terminalContainer.ActiveTerminal?.In.WriteAsync(new CloseCommand());
+                }
+
+                return true;
+            }
+
+            if (inputRecord.Event.KeyEvent.Char.UnicodeChar == _prefixKey)
+            {
+                _wasLastKeyPrefixKey = true;
+                return true;
+            }
+
+            return false;
         }
     }
 }

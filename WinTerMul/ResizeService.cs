@@ -57,21 +57,13 @@ namespace WinTerMul
 
                 foreach (var terminal in terminals)
                 {
-                    try
-                    {
-                        terminal.Width = bufferInfo.MaximumWindowSize.X;
+                    terminal.Width = bufferInfo.MaximumWindowSize.X;
 
-                        await terminal.In.WriteAsync(new ResizeCommand
-                        {
-                            Width = bufferInfo.MaximumWindowSize.X,
-                            Height = bufferInfo.MaximumWindowSize.Y
-                        });
-                    }
-                    catch (ObjectDisposedException)
+                    await terminal.In.WriteAsync(new ResizeCommand
                     {
-                        // Process has exited, next iteration should resend correct data.
-                        break;
-                    }
+                        Width = bufferInfo.MaximumWindowSize.X,
+                        Height = bufferInfo.MaximumWindowSize.Y
+                    });
                 }
             }
 
