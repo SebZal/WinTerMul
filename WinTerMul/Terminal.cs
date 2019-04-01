@@ -18,7 +18,6 @@ namespace WinTerMul
 
         public Coord CursorPosition { get; set; }
         public ConsoleCursorInfo CursorInfo { get; set; }
-
         public short Width { get; set; }
 
         internal static Terminal Create(PipeFactory pipeFactory)
@@ -49,8 +48,6 @@ namespace WinTerMul
 
         public void Dispose()
         {
-            // TODO setting to null causes null reference exceptions, fix these
-
             Out?.Dispose();
             Out = null;
 

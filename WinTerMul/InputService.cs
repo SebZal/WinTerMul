@@ -48,7 +48,7 @@ namespace WinTerMul
                 }
 
                 var inputData = new InputData { InputRecord = inputRecord };
-                await _terminalContainer.ActiveTerminal?.In.WriteAsync(inputData);
+                await _terminalContainer.ActiveTerminal?.In?.WriteAsync(inputData);
             }
         }
 
@@ -82,7 +82,7 @@ namespace WinTerMul
                 }
                 else if (unicodeChar == _configuration.ClosePaneKey)
                 {
-                    await _terminalContainer.ActiveTerminal?.In.WriteAsync(new CloseCommand());
+                    await _terminalContainer.ActiveTerminal?.In?.WriteAsync(new CloseCommand());
                 }
 
                 return true;

@@ -54,7 +54,7 @@ namespace WinTerMul
             {
                 terminal.Width = width;
 
-                await terminal.In.WriteAsync(new ResizeCommand
+                await terminal.In?.WriteAsync(new ResizeCommand
                 {
                     Width = width,
                     Height = height

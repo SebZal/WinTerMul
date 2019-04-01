@@ -48,9 +48,10 @@ namespace WinTerMul
                 if (!_tasks.ContainsKey(terminal) || _tasks[terminal].IsCompleted)
                 {
                     var state = new object[] { offset, terminal };
-                    _tasks[terminal] = terminal.Out
+                    var task = terminal.Out?
                         .ReadAsync()
                         .ContinueWith(WriteConsoleOutput, state);
+                    _tasks[terminal] = task ?? throw new InvalidOperationException("Output pipe was null in terminal.");
                 }
 
                 offset += terminal.Width;
