@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace WinTerMul
         private readonly IKernel32Api _kernel32Api;
         private readonly ILogger _logger;
         private readonly Dictionary<Terminal, Task> _tasks;
-        private readonly Dictionary<Terminal, CharInfo[]> _previousBuffers;
+        private readonly ConcurrentDictionary<Terminal, CharInfo[]> _previousBuffers;
 
         public OutputService(
             TerminalContainer terminalContainer,
@@ -28,7 +29,7 @@ namespace WinTerMul
             _kernel32Api = kernel32Api;
             _logger = logger;
             _tasks = new Dictionary<Terminal, Task>();
-            _previousBuffers = new Dictionary<Terminal, CharInfo[]>();
+            _previousBuffers = new ConcurrentDictionary<Terminal, CharInfo[]>();
 
             terminalContainer.ActiveTerminalChanged += TerminalContainer_ActiveTerminalChanged;
         }
@@ -39,52 +40,31 @@ namespace WinTerMul
 
             var terminals = _terminalContainer.GetTerminals().ToList();
 
-            var tasksToRemove = _tasks.Keys.Where(x => !terminals.Contains(x));
-            foreach (var taskToRemvoe in tasksToRemove)
-            {
-                _tasks.Remove(taskToRemvoe);
-            }
+            CleanupTasks(terminals);
 
             foreach (var terminal in terminals)
             {
                 if (!_tasks.ContainsKey(terminal) || _tasks[terminal].IsCompleted)
                 {
-                    _tasks[terminal] = terminal.Out.ReadAsync().ContinueWith((transferableTask, state) =>
-                    {
-                        if (transferableTask.IsFaulted)
-                        {
-                            return;
-                        }
-
-                        var localOffset = (short)((object[])state)[0];
-                        var localTerminal = (Terminal)((object[])state)[1];
-
-                        var outputData = (OutputData)transferableTask.Result;
-                        var writeRegion = outputData.WriteRegion;
-                        var cursorPosition = outputData.CursorPosition;
-
-                        writeRegion.Left += localOffset;
-                        writeRegion.Right += localOffset;
-                        cursorPosition.X += localOffset;
-
-                        var buffer = GetBuffer(outputData, terminal);
-                        _previousBuffers[terminal] = buffer;
-
-                        _kernel32Api.WriteConsoleOutput(
-                            buffer,
-                            outputData.BufferSize,
-                            outputData.BufferCoord,
-                            writeRegion);
-
-                        localTerminal.CursorInfo = outputData.CursorInfo;
-                        localTerminal.CursorPosition = cursorPosition;
-                    }, new object[] { offset, terminal });
+                    var state = new object[] { offset, terminal };
+                    _tasks[terminal] = terminal.Out
+                        .ReadAsync()
+                        .ContinueWith(WriteConsoleOutput, state);
                 }
 
                 offset += terminal.Width;
             }
 
             await Task.WhenAny(_tasks.Values).ContinueWith(_ => UpdateCursor());
+        }
+
+        private void CleanupTasks(IEnumerable<Terminal> terminals)
+        {
+            var tasksToRemove = _tasks.Keys.Where(x => !terminals.Contains(x));
+            foreach (var taskToRemvoe in tasksToRemove)
+            {
+                _tasks.Remove(taskToRemvoe);
+            }
         }
 
         private void UpdateCursor()
@@ -107,6 +87,43 @@ namespace WinTerMul
             {
                 _logger.LogWarning(ex, "Could not set cursor position.");
             }
+        }
+
+        private void WriteConsoleOutput(Task<ITransferable> transferableTask, object state)
+        {
+            var offset = (short)((object[])state)[0];
+            var terminal = (Terminal)((object[])state)[1];
+
+            if (transferableTask.IsFaulted)
+            {
+                _logger.LogWarning(
+                    transferableTask.Exception,
+                    "Transferable task for terminal(In: {inId}, Out: {outId}) failed.",
+                    terminal.In?.Id,
+                    terminal.Out?.Id);
+
+                return;
+            }
+
+            var outputData = (OutputData)transferableTask.Result;
+            var writeRegion = outputData.WriteRegion;
+            var cursorPosition = outputData.CursorPosition;
+
+            writeRegion.Left += offset;
+            writeRegion.Right += offset;
+            cursorPosition.X += offset;
+
+            var buffer = GetBuffer(outputData, terminal);
+            _previousBuffers[terminal] = buffer;
+
+            _kernel32Api.WriteConsoleOutput(
+                buffer,
+                outputData.BufferSize,
+                outputData.BufferCoord,
+                writeRegion);
+
+            terminal.CursorInfo = outputData.CursorInfo;
+            terminal.CursorPosition = cursorPosition;
         }
 
         private CharInfo[] GetBuffer(OutputData outputData, Terminal terminal)
