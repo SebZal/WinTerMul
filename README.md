@@ -18,3 +18,4 @@ A terminal multiplexer for Windows.
 - [x] Add configuration file.
 - [ ] Cleanup all TODOs in source code.
 - [x] Add info logs.
+- [ ] Large buffers causes empty console, fix this.
