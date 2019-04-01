@@ -31,7 +31,7 @@ namespace WinTerMul
             _terminalFactory = terminalFactory;
             _prefixKeyWithoutCtrl = _configuration.PrefixKey[2];
             _prefixKey = _prefixKeyWithoutCtrl - 'a' + 1;
-            _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0, 15 };
+            _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0 };
 
             Console.TreatControlCAsInput = true;
         }
