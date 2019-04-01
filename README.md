@@ -19,3 +19,4 @@ A terminal multiplexer for Windows.
 - [ ] Add XML documentation.
 - [x] Add configuration file.
 - [ ] Cleanup all TODOs in source code.
+- [ ] Add info logs.

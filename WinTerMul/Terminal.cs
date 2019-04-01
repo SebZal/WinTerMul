@@ -8,6 +8,10 @@ namespace WinTerMul
 {
     internal class Terminal : IDisposable
     {
+        private Terminal()
+        {
+        }
+
         public Process Process { get; private set; }
         public Pipe Out { get; private set; }
         public Pipe In { get; private set; }
@@ -17,12 +21,13 @@ namespace WinTerMul
 
         public short Width { get; set; } = 500;
 
-        public static Terminal Create()
+
+        internal static Terminal Create(PipeFactory pipeFactory)
         {
             var terminal = new Terminal
             {
-                Out = Pipe.Create(),
-                In = Pipe.Create() 
+                Out = pipeFactory.CreateServer(),
+                In = pipeFactory.CreateServer()
             };
 
             terminal.Process = new Process

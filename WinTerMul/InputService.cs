@@ -12,6 +12,7 @@ namespace WinTerMul
         private readonly TerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
         private readonly WinTerMulConfiguration _configuration;
+        private readonly TerminalFactory _terminalFactory;
         private readonly int _prefixKeyWithoutCtrl;
         private readonly int _prefixKey;
         private readonly int[] _charactersToIgnoreAfterPrefixKey;
@@ -21,11 +22,13 @@ namespace WinTerMul
         public InputService(
             TerminalContainer terminalContainer,
             IKernel32Api kernel32Api,
-            WinTerMulConfiguration configuration)
+            WinTerMulConfiguration configuration,
+            TerminalFactory terminalFactory)
         {
             _terminalContainer = terminalContainer;
             _kernel32Api = kernel32Api;
             _configuration = configuration;
+            _terminalFactory = terminalFactory;
             _prefixKeyWithoutCtrl = _configuration.PrefixKey[2];
             _prefixKey = _prefixKeyWithoutCtrl - 'a' + 1;
             _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0, 15 };
@@ -57,7 +60,7 @@ namespace WinTerMul
                     }
                     else if (unicodeChar == _configuration.VerticalSplitKey)
                     {
-                        _terminalContainer.AddTerminal(Terminal.Create());
+                        _terminalContainer.AddTerminal(_terminalFactory.CreateTerminal());
                     }
                     else if (unicodeChar == _configuration.ClosePaneKey)
                     {

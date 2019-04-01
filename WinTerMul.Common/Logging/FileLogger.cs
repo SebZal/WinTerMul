@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 using Microsoft.Extensions.Logging;
 
@@ -48,9 +49,11 @@ namespace WinTerMul.Common.Logging
                 log += "|" + serializedException;
             }
 
-            lock (Lock)
+            using (var mutex = new Mutex(false, "WinTerMul.Common.Logging.FileLogger.Log"))
             {
+                mutex.WaitOne();
                 File.AppendAllText(LogPath, log + Environment.NewLine);
+                mutex.ReleaseMutex();
             }
         }
 

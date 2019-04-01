@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 namespace WinTerMul.Common
 {
     public sealed class Pipe : IDisposable
@@ -11,30 +13,35 @@ namespace WinTerMul.Common
         private readonly SHA1CryptoServiceProvider _sha1;
 
         private PipeStream _stream;
+        private readonly ILogger _logger;
         private byte[] _previousHash;
 
-        private Pipe(string id, PipeStream stream)
+        private Pipe(string id, PipeStream stream, ILogger logger)
         {
             Id = id;
             _stream = stream;
+            _logger = logger;
             _sha1 = new SHA1CryptoServiceProvider();
             _previousHash = new byte[_sha1.HashSize / 8];
         }
 
         public string Id { get; }
 
-        public static Pipe Create()
+        internal static Pipe Create(ILogger logger)
         {
             var id = Guid.NewGuid().ToString();
             var stream = new NamedPipeServerStream(id);
-            return new Pipe(id, stream);
+            logger.LogInformation("Created named pipe server {id}.", id);
+            return new Pipe(id, stream, logger);
         }
 
-        public static Pipe Connect(string id)
+        internal static Pipe Connect(string id, ILogger logger)
         {
             var stream = new NamedPipeClientStream(id);
+            logger.LogInformation("Connecting to named pipe server {id}.", id);
             stream.Connect();
-            return new Pipe(id, stream);
+            logger.LogInformation("Successfully connected to named pipe server {id}.", id);
+            return new Pipe(id, stream, logger);
         }
 
         public async Task<bool> WriteAsync(
@@ -78,8 +85,17 @@ namespace WinTerMul.Common
 
         public void Dispose()
         {
-            _stream?.Dispose();
-            _stream = null;
+            if (_stream != null)
+            {
+                var isServer = _stream is NamedPipeServerStream;
+                _logger.LogInformation(
+                    "Closing named pipe {serverOrClient} {id}.",
+                    isServer ? "server" : "client",
+                    Id);
+
+                _stream.Dispose();
+                _stream = null;
+            }
 
             _sha1.Dispose();
         }
@@ -113,7 +129,9 @@ namespace WinTerMul.Common
         {
             if (_stream is NamedPipeServerStream s && !_stream.IsConnected)
             {
+                _logger.LogInformation("Waiting for client to connect to named pipe server {id}.", Id);
                 await s.WaitForConnectionAsync(cancellationToken);
+                _logger.LogInformation("Client successfully connected to named pipe server {id}.", Id);
             }
         }
     }

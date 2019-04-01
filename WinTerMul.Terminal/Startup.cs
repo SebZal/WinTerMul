@@ -27,8 +27,8 @@ namespace WinTerMul.Terminal
 
             services.AddSingleton(_inputArguments);
 
-            services.AddSingleton(_ => Pipe.Connect(_inputArguments.OutputPipeId));
-            services.AddSingleton(_ => Pipe.Connect(_inputArguments.InputPipeId));
+            services.AddSingleton(x => x.GetRequiredService<PipeFactory>().CreateClient(_inputArguments.OutputPipeId));
+            services.AddSingleton(x => x.GetRequiredService<PipeFactory>().CreateClient(_inputArguments.InputPipeId));
             services.AddSingleton<PipeStore>(x => type => x.GetServices<Pipe>().ElementAt((int)type));
 
             services.AddSingleton<ProcessService>();

@@ -17,6 +17,8 @@ namespace WinTerMul.Common
             var winTerMulConfiguration = new WinTerMulConfiguration(configuration);
             services.AddSingleton(winTerMulConfiguration);
 
+            services.AddTransient<PipeFactory>();
+
             services.AddLogging(loggingBuilder => loggingBuilder.AddFileLogger(winTerMulConfiguration));
             services.AddSingleton<IKernel32Api, Kernel32Api>();
             return services;
