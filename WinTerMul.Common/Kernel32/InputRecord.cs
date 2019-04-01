@@ -1,5 +1,8 @@
-﻿namespace WinTerMul.Common.Kernel32
+﻿using System.Runtime.InteropServices;
+
+namespace WinTerMul.Common.Kernel32
 {
+    [StructLayout(LayoutKind.Sequential)]
     public struct InputRecord 
     {
         public InputEventTypeFlag EventType;

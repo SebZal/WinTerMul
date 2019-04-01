@@ -4,10 +4,7 @@ using System.Runtime.InteropServices;
 namespace WinTerMul.Common.Kernel32
 {
     internal static class NativeMethods
-    { 
-        // TODO cleanup, check for consistency
-        // TODO remove unused methods if any
-
+    {
         [DllImport("kernel32.dll", EntryPoint = "ReadConsoleOutputW", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern bool ReadConsoleOutput(
             IntPtr hConsoleOutput,
@@ -50,32 +47,28 @@ namespace WinTerMul.Common.Kernel32
             IntPtr hConsoleOutput,
             ref ConsoleCursorInfo lpConsoleCursorInfo);
 
-        [DllImport("Kernel32", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)] // TODO should this be above all methods that return bool?
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool SetConsoleCursorPosition(IntPtr hConsoleOutput, Coord dwCursorPosition);
 
-        [DllImport("Kernel32", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetConsoleScreenBufferInfo(
             IntPtr hConsoleOutput,
             out ConsoleScreenBufferInfo lpConsoleScreenBufferInfo);
 
-        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern bool ReadConsoleInput(
             IntPtr hConsoleInput,
             out InputRecord lpBuffer,
             int nLength,
             out int lpNumberOfEventsRead);
 
-        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr GetStdHandle(StdHandle nStdHandle);
 
-        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool FreeConsole();
 
-        [DllImport("Kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool AttachConsole(int dwProcessId);
     }
 }
