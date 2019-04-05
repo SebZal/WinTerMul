@@ -16,7 +16,10 @@ A terminal multiplexer for Windows.
 - [x] Move caret to active pane after pane switch.
 - [x] Reduce CPU usage.
 - [x] Add configuration file.
-- [ ] Cleanup all TODOs in source code.
+- [x] Cleanup all TODOs in source code.
 - [x] Add info logs.
 - [ ] Large buffers causes empty console, fix this.
 - [ ] When terminal is opened from existing console the buffer size is too small.
+- [ ] Setup build.
+- [ ] Setup GitHub project with further work.
+- [ ] Create first release and split branches into master and develop (setup branch policies).
