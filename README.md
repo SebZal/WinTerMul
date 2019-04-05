@@ -1,5 +1,7 @@
 ## WinTerMul - Windows Terminal Multiplexer
 
+[![Build Status](https://dev.azure.com/sebaza/WinTerMul/_apis/build/status/SebZal.WinTerMul?branchName=master)](https://dev.azure.com/sebaza/WinTerMul/_build/latest?definitionId=1&branchName=master)
+
 A terminal multiplexer for Windows.
 
 #### TODO
