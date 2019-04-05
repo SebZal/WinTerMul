@@ -18,6 +18,7 @@ namespace WinTerMul.Common
         }
 
         public LogLevel LogLevel => (LogLevel)Enum.Parse(typeof(LogLevel), _configuration["LogLevel"]);
+        public string LogPath => _configuration["LogPath"];
         public string PrefixKey => _configuration["PrefixKey"].ToLower();
         public char SetNextTerminalActiveKey => _configuration["SetNextTerminalActiveKey"][0];
         public char SetPreviousTerminalActive => _configuration["SetPreviousTerminalActive"][0];
@@ -32,6 +33,7 @@ namespace WinTerMul.Common
             }
 
             ValidateLogLevel(configuration);
+            ValidateLogPath(configuration);
             ValidatePrefixKey(configuration);
             ValidateKeyBinding(configuration, nameof(SetNextTerminalActiveKey));
             ValidateKeyBinding(configuration, nameof(SetPreviousTerminalActive));
@@ -44,6 +46,14 @@ namespace WinTerMul.Common
             if (!Enum.TryParse<LogLevel>(configuration["LogLevel"], out _))
             {
                 throw new ArgumentException($"Invalid or missing {nameof(LogLevel)} configuration.");
+            }
+        }
+
+        private void ValidateLogPath(IConfiguration configuration)
+        {
+            if (string.IsNullOrWhiteSpace(configuration["LogPath"]))
+            {
+                throw new ArgumentException($"{nameof(LogPath)} not specified.");
             }
         }
 

@@ -11,7 +11,7 @@ namespace WinTerMul.Common.Logging
         {
             loggingBuilder.SetMinimumLevel(configuration.LogLevel);
             loggingBuilder.Services.AddTransient(x => x.GetRequiredService<ILoggerFactory>().CreateLogger(""));
-            return loggingBuilder.AddProvider(new FileLoggerProvider());
+            return loggingBuilder.AddProvider(new FileLoggerProvider(configuration));
         }
     }
 }

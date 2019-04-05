@@ -13,7 +13,12 @@ namespace WinTerMul.Common.Logging
     {
         private readonly static object Lock = new object();
 
-        private const string LogPath = "log.txt";
+        private readonly string _logPath;
+
+        public FileLogger(WinTerMulConfiguration configuration)
+        {
+            _logPath = configuration.LogPath;
+        }
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -52,7 +57,7 @@ namespace WinTerMul.Common.Logging
             using (var mutex = new Mutex(false, "WinTerMul.Common.Logging.FileLogger.Log"))
             {
                 mutex.WaitOne();
-                File.AppendAllText(LogPath, log + Environment.NewLine);
+                File.AppendAllText(_logPath, log + Environment.NewLine);
                 mutex.ReleaseMutex();
             }
         }
