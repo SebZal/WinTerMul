@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 using FakeItEasy;
 
@@ -16,30 +17,94 @@ namespace WinTerMul.Tests.WinTerMul
         [TestClass]
         public class HandleInputAsync
         {
+            private const string PrefixKeyString = "C-k";
+            private const byte PrefixKey = 11;
+            private const char ClosePaneKey = 'x';
+
             [TestMethod]
             public void IsKeyEvent_InputDataIsWrittenToActiveTerminal()
             {
                 // Arrange
-                InputData passedInputData = null;
-                var expectedInputRecord = new InputRecord
+                var inputRecord = new InputRecord();
+                inputRecord.Event.KeyEvent.Char.AsciiChar = 99;
+                inputRecord.Event.KeyEvent.Char.UnicodeChar = 'c';
+                inputRecord.EventType = InputEventTypeFlag.KeyEvent;
+
+                InputRecord? writtenInputRecord = null;
+                var inputService = CreateInputService<InputData>(
+                    inputRecord,
+                    x => writtenInputRecord = x?.InputRecord);
+
+                // Act
+                inputService.HandleInputAsync().Wait();
+
+                // Assert
+                var expectedJson = JsonConvert.SerializeObject(inputRecord);
+                var actualJson = JsonConvert.SerializeObject(writtenInputRecord);
+                Assert.AreEqual(expectedJson, actualJson);
+            }
+
+            [TestMethod]
+            public void IsNotKeyEvent_NoInputDataWritten()
+            {
+                // Arrange
+                var inputRecord = new InputRecord
                 {
-                    Event = new InputEventRecord
-                    {
-                        KeyEvent = new KeyEventRecord
-                        {
-                            Char = new CharInfoEncoding
-                            {
-                                AsciiChar = 99,
-                                UnicodeChar = 'c'
-                            }
-                        }
-                    },
-                    EventType = InputEventTypeFlag.KeyEvent
+                    EventType = InputEventTypeFlag.FocusEvent
                 };
 
+                InputRecord? writtenInputRecord = null;
+                var inputService = CreateInputService<InputData>(
+                    inputRecord,
+                    x => writtenInputRecord = x?.InputRecord);
+
+                // Act
+                inputService.HandleInputAsync().Wait();
+
+                // Assert
+                Assert.IsNull(writtenInputRecord);
+            }
+
+            [TestMethod]
+            public void PrefixKeyThenClosePaneKey_CloseCommandIsSent()
+            {
+                // Arrange
+                var prefixKey = new InputRecord();
+                prefixKey.Event.KeyEvent.Char.UnicodeChar = (char)PrefixKey;
+                prefixKey.Event.KeyEvent.Char.AsciiChar = PrefixKey;
+                prefixKey.EventType = InputEventTypeFlag.KeyEvent;
+
+                var closePaneKey = new InputRecord();
+                closePaneKey.Event.KeyEvent.Char.UnicodeChar = ClosePaneKey;
+                closePaneKey.Event.KeyEvent.Char.AsciiChar = (byte)ClosePaneKey;
+                closePaneKey.EventType = InputEventTypeFlag.KeyEvent;
+
+                CloseCommand closeCommand = null;
+                var inputService = CreateInputService<CloseCommand>(
+                    prefixKey,
+                    closePaneKey,
+                    x => closeCommand = x);
+
+                // Act
+                inputService.HandleInputAsync().Wait();
+                inputService.HandleInputAsync().Wait();
+
+                // Assert
+                Assert.IsNotNull(closeCommand);
+            }
+
+            private InputService CreateInputService<T>(InputRecord @in, Action<T> @out)
+                where T : class
+            {
+                return CreateInputService(@in, default(InputRecord), @out);
+            }
+
+            private InputService CreateInputService<T>(InputRecord in1, InputRecord in2, Action<T> @out)
+                where T : class
+            {
                 var inPipe = A.Fake<IPipe>();
                 A.CallTo(() => inPipe.WriteAsync(A<ITransferable>._, A<bool>._, A<CancellationToken>._))
-                    .Invokes(x => passedInputData = x.Arguments[0] as InputData);
+                    .Invokes(x => @out(x.Arguments[0] as T));
 
                 var activeTerminal = A.Fake<ITerminal>();
                 A.CallTo(() => activeTerminal.In).Returns(inPipe);
@@ -48,28 +113,12 @@ namespace WinTerMul.Tests.WinTerMul
                 A.CallTo(() => terminalContainer.ActiveTerminal).Returns(activeTerminal);
 
                 var kernel32Api = A.Fake<IKernel32Api>();
-                A.CallTo(() => kernel32Api.ReadConsoleInput()).Returns(expectedInputRecord);
+                var counter = 0;
+                A.CallTo(() => kernel32Api.ReadConsoleInput()).ReturnsLazily(x => counter++ == 0 ? in1 : in2);
 
-                var inputService = CreateInputService(terminalContainer, kernel32Api);
-
-                // Act
-                inputService.HandleInputAsync().Wait();
-
-                // Assert
-                var expectedJson = JsonConvert.SerializeObject(expectedInputRecord);
-                var actualJson = JsonConvert.SerializeObject(passedInputData?.InputRecord);
-                Assert.AreEqual(expectedJson, actualJson);
-            }
-
-            // TODO test if is not key event
-            // TODO test when prefix key is used
-
-            private InputService CreateInputService(
-                ITerminalContainer terminalContainer,
-                IKernel32Api kernel32Api)
-            {
                 var configuration = A.Fake<IWinTerMulConfiguration>();
-                A.CallTo(() => configuration.PrefixKey).Returns("C-k");
+                A.CallTo(() => configuration.PrefixKey).Returns(PrefixKeyString);
+                A.CallTo(() => configuration.ClosePaneKey).Returns(ClosePaneKey);
 
                 return new InputService(
                     terminalContainer,
