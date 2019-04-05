@@ -11,6 +11,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8126737D-97CD-4E69-B2AD-FABFCA4B63A1}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		azure-pipelines.yml = azure-pipelines.yml
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -19,7 +20,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Terminal", "WinTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Common", "WinTerMul.Common\WinTerMul.Common.csproj", "{56877510-3A9F-4D87-B697-54DB3E0301C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinTerMul.Tests", "WinTerMul.Tests\WinTerMul.Tests.csproj", "{46A2CA2F-FD51-49E6-9531-AC652CD906DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinTerMul.Tests", "WinTerMul.Tests\WinTerMul.Tests.csproj", "{46A2CA2F-FD51-49E6-9531-AC652CD906DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
