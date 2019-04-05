@@ -120,7 +120,7 @@ namespace WinTerMul.Common.Kernel32
             var timesFailed = 0;
             while (!NativeMethods.AttachConsole(processId))
             {
-                if (++timesFailed > 10)
+                if (++timesFailed > 100)
                 {
                     HandleError();
                 }
