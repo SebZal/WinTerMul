@@ -131,6 +131,21 @@ namespace WinTerMul.Common.Kernel32
             _outputHandle = NativeMethods.GetStdHandle(StdHandle.StdOutputHandle);
         }
 
+        public void TreatControlCAsInput()
+        {
+            if (!NativeMethods.GetConsoleMode(_inputHandle, out var currentConsoleMode))
+            {
+                HandleError();
+            }
+
+            // Remove ConsoleMode.EnableProcessedInput.
+            var consoleMode = (ConsoleMode)((uint)currentConsoleMode & -2);
+            if (!NativeMethods.SetConsoleMode(_inputHandle, consoleMode))
+            {
+                HandleError();
+            }
+        }
+
         private void HandleError([CallerMemberName] string caller = null)
         {
             var errorCode = Marshal.GetLastWin32Error();

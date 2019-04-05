@@ -34,7 +34,7 @@ namespace WinTerMul
             _prefixKey = _prefixKeyWithoutCtrl - 'a' + 1;
             _charactersToIgnoreAfterPrefixKey = new[] { _prefixKey, _prefixKeyWithoutCtrl, 0 };
 
-            Console.TreatControlCAsInput = true;
+            _kernel32Api.TreatControlCAsInput();
         }
 
         public async Task HandleInputAsync()

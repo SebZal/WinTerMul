@@ -1,5 +1,7 @@
 ## WinTerMul - Windows Terminal Multiplexer
 
+[![Build Status](https://dev.azure.com/sebaza/WinTerMul/_apis/build/status/SebZal.WinTerMul?branchName=master)](https://dev.azure.com/sebaza/WinTerMul/_build/latest?definitionId=1&branchName=master)
+
 A terminal multiplexer for Windows.
 
 #### TODO
@@ -20,6 +22,6 @@ A terminal multiplexer for Windows.
 - [x] Add info logs.
 - [ ] Large buffers causes empty console, fix this.
 - [ ] When terminal is opened from existing console the buffer size is too small.
-- [ ] Setup build.
+- [x] Setup build.
 - [ ] Setup GitHub project with further work.
 - [ ] Create first release and split branches into master and develop (setup branch policies).

@@ -14,5 +14,6 @@
         void SetConsoleScreenBufferSize(Coord size);
         void FreeConsole();
         void AttachConsole(int processId);
+        void TreatControlCAsInput();
     }
 }
