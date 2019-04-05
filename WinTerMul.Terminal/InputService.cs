@@ -22,6 +22,8 @@ namespace WinTerMul.Terminal
             _processService = processService ?? throw new ArgumentNullException(nameof(processService));
         }
 
+        public event EventHandler<ResizeEventArgs> Resize = (_, __) => { };
+
         public async Task HandleInputAsync()
         {
             var data = await _inputPipe.ReadAsync(_processService.CancellationToken);
@@ -31,7 +33,7 @@ namespace WinTerMul.Terminal
             }
             else if (data.DataType == DataType.ResizeCommand)
             {
-                HandleResize((ResizeCommand)data);
+                ResizeTerminal((ResizeCommand)data);
             }
             else if (data.DataType == DataType.CloseCommand)
             {
@@ -39,13 +41,7 @@ namespace WinTerMul.Terminal
             }
         }
 
-        public void Dispose()
-        {
-            _inputPipe.Dispose();
-            _processService.Dispose();
-        }
-
-        private void HandleResize(ResizeCommand resizeCommand)
+        public void ResizeTerminal(ResizeCommand resizeCommand)
         {
             // Resize crashes if window size exceeds buffer size.
             // Hence, temporary set window size to smallest possible,
@@ -83,9 +79,15 @@ namespace WinTerMul.Terminal
                 rect.Bottom = (short)(bufferInfo.MaximumWindowSize.Y - 1);
             }
 
-            // TODO How to handle resize for child processes?
-            // TODO E.g. start vifm, resize, close vifm. This results in wrong buffer size for console.
             _kernel32Api.SetConsoleWindowInfo(true, rect);
+
+            Resize(this, new ResizeEventArgs(resizeCommand.Width, resizeCommand.Height));
+        }
+
+        public void Dispose()
+        {
+            _inputPipe.Dispose();
+            _processService.Dispose();
         }
     }
 }

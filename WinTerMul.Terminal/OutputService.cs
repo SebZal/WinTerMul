@@ -11,23 +11,30 @@ namespace WinTerMul.Terminal
     internal class OutputService : IDisposable
     {
         private readonly IKernel32Api _kernel32Api;
-        private readonly ProcessService _processService;
         private readonly Pipe _outputPipe;
+        private readonly ProcessService _processService;
+        private readonly InputService _inputService;
 
         private int _delay;
         private DateTime _lastSpeedUpTime;
         private CancellationTokenSource _cancellationTokenSource;
         private CharInfo[] _previousBuffer;
         private Coord _previousBufferSize;
+        private short _previousWidth;
+        private short _previousHeight;
 
         public OutputService(
             IKernel32Api kernel32Api,
             PipeStore pipeStore,
-            ProcessService processService)
+            ProcessService processService,
+            InputService inputService)
         {
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _outputPipe = pipeStore(PipeType.Output) ?? throw new ArgumentNullException(nameof(pipeStore));
             _processService = processService ?? throw new ArgumentNullException(nameof(processService));
+            _inputService = inputService ?? throw new ArgumentNullException(nameof(inputService));
+
+            inputService.Resize += InputService_Resize;
         }
 
         public void SpeedUpPolling()
@@ -108,6 +115,19 @@ namespace WinTerMul.Terminal
             {
                 _previousBufferSize = bufferSize;
                 _previousBuffer = null;
+
+                if (bufferSize.X != _previousWidth || bufferSize.Y != _previousHeight)
+                {
+                    // Buffer size has changed but a resize has not been performed by parent process.
+                    // This can happen if a terminal application is opened, and a buffer resize is performed on
+                    // the opened application. If this application closes, the parent application still has the
+                    // previous buffer size. Hence perform a resize in order to fix this.
+                    _inputService.ResizeTerminal(new ResizeCommand
+                    {
+                        Width = _previousWidth,
+                        Height = _previousHeight
+                    });
+                }
             }
         }
 
@@ -124,6 +144,12 @@ namespace WinTerMul.Terminal
 
             _cancellationTokenSource = new CancellationTokenSource();
             await Task.Delay(_delay, _cancellationTokenSource.Token);
+        }
+
+        private void InputService_Resize(object sender, ResizeEventArgs e)
+        {
+            _previousWidth = e.Width;
+            _previousHeight = e.Height;
         }
     }
 }

@@ -19,3 +19,4 @@ A terminal multiplexer for Windows.
 - [ ] Cleanup all TODOs in source code.
 - [x] Add info logs.
 - [ ] Large buffers causes empty console, fix this.
+- [ ] When terminal is opened from existing console the buffer size is too small.
