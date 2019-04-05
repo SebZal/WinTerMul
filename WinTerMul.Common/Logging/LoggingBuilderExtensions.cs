@@ -7,7 +7,7 @@ namespace WinTerMul.Common.Logging
     {
         public static ILoggingBuilder AddFileLogger(
             this ILoggingBuilder loggingBuilder,
-            WinTerMulConfiguration configuration)
+            IWinTerMulConfiguration configuration)
         {
             loggingBuilder.SetMinimumLevel(configuration.LogLevel);
             loggingBuilder.Services.AddTransient(x => x.GetRequiredService<ILoggerFactory>().CreateLogger(""));

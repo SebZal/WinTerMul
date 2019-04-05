@@ -11,7 +11,7 @@ namespace WinTerMul.Terminal
     internal class OutputService : IDisposable
     {
         private readonly IKernel32Api _kernel32Api;
-        private readonly Pipe _outputPipe;
+        private readonly IPipe _outputPipe;
         private readonly ProcessService _processService;
         private readonly InputService _inputService;
 

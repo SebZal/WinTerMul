@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace WinTerMul.Common
 {
-    public class WinTerMulConfiguration
+    internal class WinTerMulConfiguration : IWinTerMulConfiguration
     {
         private readonly IConfiguration _configuration;
 
-        internal WinTerMulConfiguration(IConfiguration configuration)
+        public WinTerMulConfiguration(IConfiguration configuration)
         {
             Validate(configuration);
 

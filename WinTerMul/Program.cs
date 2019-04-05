@@ -43,7 +43,7 @@ namespace WinTerMul
 
         private static void Run(IServiceProvider serviceProvider)
         {
-            var terminalContainer = serviceProvider.GetRequiredService<TerminalContainer>();
+            var terminalContainer = serviceProvider.GetRequiredService<ITerminalContainer>();
             var resizeService = serviceProvider.GetRequiredService<ResizeService>();
             var inputService = serviceProvider.GetRequiredService<InputService>();
             var outputService = serviceProvider.GetRequiredService<OutputService>();

@@ -29,7 +29,7 @@ namespace WinTerMul.Terminal
 
             services.AddSingleton(x => x.GetRequiredService<PipeFactory>().CreateClient(_inputArguments.OutputPipeId));
             services.AddSingleton(x => x.GetRequiredService<PipeFactory>().CreateClient(_inputArguments.InputPipeId));
-            services.AddSingleton<PipeStore>(x => type => x.GetServices<Pipe>().ElementAt((int)type));
+            services.AddSingleton<PipeStore>(x => type => x.GetServices<IPipe>().ElementAt((int)type));
 
             services.AddSingleton<ProcessService>();
             services.AddSingleton<OutputService>();

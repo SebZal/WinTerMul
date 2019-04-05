@@ -14,14 +14,14 @@ namespace WinTerMul
 {
     internal class OutputService
     {
-        private readonly TerminalContainer _terminalContainer;
+        private readonly ITerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
         private readonly ILogger _logger;
-        private readonly Dictionary<Terminal, Task> _tasks;
-        private readonly ConcurrentDictionary<Terminal, CharInfo[]> _previousBuffers;
+        private readonly Dictionary<ITerminal, Task> _tasks;
+        private readonly ConcurrentDictionary<ITerminal, CharInfo[]> _previousBuffers;
 
         public OutputService(
-            TerminalContainer terminalContainer,
+            ITerminalContainer terminalContainer,
             IKernel32Api kernel32Api,
             ILogger logger)
         {
@@ -29,8 +29,8 @@ namespace WinTerMul
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _tasks = new Dictionary<Terminal, Task>();
-            _previousBuffers = new ConcurrentDictionary<Terminal, CharInfo[]>();
+            _tasks = new Dictionary<ITerminal, Task>();
+            _previousBuffers = new ConcurrentDictionary<ITerminal, CharInfo[]>();
 
             terminalContainer.ActiveTerminalChanged += TerminalContainer_ActiveTerminalChanged;
         }
@@ -60,7 +60,7 @@ namespace WinTerMul
             await Task.WhenAny(_tasks.Values).ContinueWith(_ => UpdateCursor());
         }
 
-        private void CleanupTasks(IEnumerable<Terminal> terminals)
+        private void CleanupTasks(IEnumerable<ITerminal> terminals)
         {
             var tasksToRemove = _tasks.Keys.Where(x => !terminals.Contains(x));
             foreach (var taskToRemvoe in tasksToRemove)
@@ -94,7 +94,7 @@ namespace WinTerMul
         private void WriteConsoleOutput(Task<ITransferable> transferableTask, object state)
         {
             var offset = (short)((object[])state)[0];
-            var terminal = (Terminal)((object[])state)[1];
+            var terminal = (ITerminal)((object[])state)[1];
 
             if (transferableTask.IsFaulted)
             {
@@ -128,7 +128,7 @@ namespace WinTerMul
             terminal.CursorPosition = cursorPosition;
         }
 
-        private CharInfo[] GetBuffer(OutputData outputData, Terminal terminal)
+        private CharInfo[] GetBuffer(OutputData outputData, ITerminal terminal)
         {
             var buffer = outputData.Buffer;
 

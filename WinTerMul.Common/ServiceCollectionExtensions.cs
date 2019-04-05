@@ -15,7 +15,7 @@ namespace WinTerMul.Common
                 .Build();
 
             var winTerMulConfiguration = new WinTerMulConfiguration(configuration);
-            services.AddSingleton(winTerMulConfiguration);
+            services.AddSingleton<IWinTerMulConfiguration>(winTerMulConfiguration);
 
             services.AddTransient<PipeFactory>();
 

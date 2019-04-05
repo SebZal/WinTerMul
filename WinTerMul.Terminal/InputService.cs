@@ -8,7 +8,7 @@ namespace WinTerMul.Terminal
 {
     internal class InputService : IDisposable
     {
-        private readonly Pipe _inputPipe;
+        private readonly IPipe _inputPipe;
         private readonly IKernel32Api _kernel32Api;
         private readonly ProcessService _processService;
 

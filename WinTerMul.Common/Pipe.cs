@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace WinTerMul.Common
 {
-    public sealed class Pipe : IDisposable
+    internal sealed class Pipe : IPipe
     {
         private readonly SHA1CryptoServiceProvider _sha1;
 
@@ -46,8 +46,8 @@ namespace WinTerMul.Common
 
         public async Task<bool> WriteAsync(
             ITransferable @object,
-            bool writeOnlyIfDataHasChanged = false,
-            CancellationToken cancellationToken = default(CancellationToken))
+            bool writeOnlyIfDataHasChanged,
+            CancellationToken cancellationToken)
         {
             await VerifyIsConnectedAsync(cancellationToken);
 
@@ -69,8 +69,7 @@ namespace WinTerMul.Common
             return true;
         }
 
-        public async Task<ITransferable> ReadAsync(
-            CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ITransferable> ReadAsync(CancellationToken cancellationToken)
         {
             await VerifyIsConnectedAsync(cancellationToken);
 

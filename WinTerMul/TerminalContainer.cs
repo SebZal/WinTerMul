@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace WinTerMul
 {
-    internal class TerminalContainer : IDisposable
+    internal class TerminalContainer : ITerminalContainer
     {
         private readonly object _lock;
-        private readonly List<Terminal> _terminals;
+        private readonly List<ITerminal> _terminals;
 
-        private Terminal _activeTerminal;
+        private ITerminal _activeTerminal;
 
-        public TerminalContainer(params Terminal[] terminals)
+        public TerminalContainer(params ITerminal[] terminals)
         {
             if (terminals == null)
             {
@@ -18,12 +18,12 @@ namespace WinTerMul
             }
 
             _lock = new object();
-            _terminals = new List<Terminal>(terminals);
+            _terminals = new List<ITerminal>(terminals);
         }
 
         public event EventHandler<EventArgs> ActiveTerminalChanged = (_, __) => { };
 
-        public Terminal ActiveTerminal
+        public ITerminal ActiveTerminal
         {
             get
             {
@@ -78,7 +78,7 @@ namespace WinTerMul
             }
         }
 
-        public void AddTerminal(Terminal terminal)
+        public void AddTerminal(ITerminal terminal)
         {
             lock (_lock)
             {
@@ -88,12 +88,12 @@ namespace WinTerMul
             }
         }
 
-        public IReadOnlyCollection<Terminal> GetTerminals()
+        public IReadOnlyCollection<ITerminal> GetTerminals()
         {
             lock (_lock)
             {
-                var terminals = new List<Terminal>();
-                Terminal previousTerminal = null;
+                var terminals = new List<ITerminal>();
+                ITerminal previousTerminal = null;
                 var activeTerminal = ActiveTerminal;
 
                 foreach (var terminal in _terminals.ToArray())

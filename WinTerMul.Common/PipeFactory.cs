@@ -11,12 +11,12 @@ namespace WinTerMul.Common
             _logger = logger;
         }
 
-        public Pipe CreateServer()
+        public IPipe CreateServer()
         {
             return Pipe.Create(_logger);
         }
 
-        public Pipe CreateClient(string id)
+        public IPipe CreateClient(string id)
         {
             return Pipe.Connect(id, _logger);
         }

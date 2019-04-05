@@ -15,7 +15,7 @@ namespace WinTerMul.Common.Logging
 
         private readonly string _logPath;
 
-        public FileLogger(WinTerMulConfiguration configuration)
+        public FileLogger(IWinTerMulConfiguration configuration)
         {
             _logPath = configuration.LogPath;
         }

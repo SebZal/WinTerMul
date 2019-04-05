@@ -2,7 +2,7 @@
 
 namespace WinTerMul
 {
-    internal class TerminalFactory
+    internal class TerminalFactory : ITerminalFactory
     {
         private readonly PipeFactory _pipeFactory;
 
@@ -11,7 +11,7 @@ namespace WinTerMul
             _pipeFactory = pipeFactory ?? throw new System.ArgumentNullException(nameof(pipeFactory));
         }
 
-        public Terminal CreateTerminal()
+        public ITerminal CreateTerminal()
         {
             return Terminal.Create(_pipeFactory);
         }

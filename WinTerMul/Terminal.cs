@@ -6,21 +6,21 @@ using WinTerMul.Common.Kernel32;
 
 namespace WinTerMul
 {
-    internal class Terminal : IDisposable
+    internal class Terminal : ITerminal
     {
         private Terminal()
         {
         }
 
         public Process Process { get; private set; }
-        public Pipe Out { get; private set; }
-        public Pipe In { get; private set; }
+        public IPipe Out { get; private set; }
+        public IPipe In { get; private set; }
 
         public Coord CursorPosition { get; set; }
         public ConsoleCursorInfo CursorInfo { get; set; }
         public short Width { get; set; }
 
-        internal static Terminal Create(PipeFactory pipeFactory)
+        public static Terminal Create(PipeFactory pipeFactory)
         {
             if (pipeFactory == null)
             {

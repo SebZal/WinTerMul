@@ -9,10 +9,10 @@ namespace WinTerMul
 {
     internal class InputService : IDisposable
     {
-        private readonly TerminalContainer _terminalContainer;
+        private readonly ITerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
-        private readonly WinTerMulConfiguration _configuration;
-        private readonly TerminalFactory _terminalFactory;
+        private readonly IWinTerMulConfiguration _configuration;
+        private readonly ITerminalFactory _terminalFactory;
         private readonly int _prefixKeyWithoutCtrl;
         private readonly int _prefixKey;
         private readonly int[] _charactersToIgnoreAfterPrefixKey;
@@ -20,10 +20,10 @@ namespace WinTerMul
         private bool _wasLastKeyPrefixKey;
 
         public InputService(
-            TerminalContainer terminalContainer,
+            ITerminalContainer terminalContainer,
             IKernel32Api kernel32Api,
-            WinTerMulConfiguration configuration,
-            TerminalFactory terminalFactory)
+            IWinTerMulConfiguration configuration,
+            ITerminalFactory terminalFactory)
         {
             _terminalContainer = terminalContainer ?? throw new ArgumentNullException(nameof(terminalContainer));
             _kernel32Api = kernel32Api ?? throw new ArgumentNullException(nameof(kernel32Api));

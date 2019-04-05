@@ -2,5 +2,5 @@
 
 namespace WinTerMul.Terminal
 {
-    internal delegate Pipe PipeStore(PipeType type);
+    internal delegate IPipe PipeStore(PipeType type);
 }

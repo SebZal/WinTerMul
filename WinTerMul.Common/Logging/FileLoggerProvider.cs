@@ -4,9 +4,9 @@ namespace WinTerMul.Common.Logging
 {
     internal class FileLoggerProvider : ILoggerProvider
     {
-        private readonly WinTerMulConfiguration _configuration;
+        private readonly IWinTerMulConfiguration _configuration;
 
-        public FileLoggerProvider(WinTerMulConfiguration configuration)
+        public FileLoggerProvider(IWinTerMulConfiguration configuration)
         {
             _configuration = configuration;
         }

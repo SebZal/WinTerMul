@@ -9,7 +9,7 @@ namespace WinTerMul
 {
     internal class ResizeService : IDisposable
     {
-        private readonly TerminalContainer _terminalContainer;
+        private readonly ITerminalContainer _terminalContainer;
         private readonly IKernel32Api _kernel32Api;
 
         private short _previousWidth;
@@ -17,7 +17,7 @@ namespace WinTerMul
         private (DateTime, Func<Task>)? _pendingReisze;
 
         public ResizeService(
-            TerminalContainer terminalContainer,
+            ITerminalContainer terminalContainer,
             IKernel32Api kernel32Api)
         {
             _terminalContainer = terminalContainer ?? throw new ArgumentNullException(nameof(terminalContainer));
@@ -63,7 +63,7 @@ namespace WinTerMul
             _terminalContainer.Dispose();
         }
 
-        private async Task ResizeTerminals(IEnumerable<Terminal> terminals, short width, short height)
+        private async Task ResizeTerminals(IEnumerable<ITerminal> terminals, short width, short height)
         {
             foreach (var terminal in terminals)
             {

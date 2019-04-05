@@ -10,11 +10,11 @@ namespace WinTerMul
         {
             services.AddWinTerMulCommon();
 
-            services.AddTransient<TerminalFactory>();
+            services.AddTransient<ITerminalFactory, TerminalFactory>();
 
-            services.AddSingleton(x =>
+            services.AddSingleton<ITerminalContainer>(x =>
             {
-                return new TerminalContainer(x.GetRequiredService<TerminalFactory>().CreateTerminal());
+                return new TerminalContainer(x.GetRequiredService<ITerminalFactory>().CreateTerminal());
             });
             services.AddSingleton<ResizeService>();
             services.AddSingleton<InputService>();
